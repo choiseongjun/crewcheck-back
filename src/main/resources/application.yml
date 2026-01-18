@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: crewcheck-back
+  datasource:
+    url: jdbc:postgresql://localhost:5432/crewcheck
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: c2lsdmVybGluaW5nLXRoZS1fcXVyZS10by1teS1saWZlLXRoZS1iZXN0LW11c2ljLWluLXRoZS13b3JsZC1ob3BlLXlvdS1saWtlLWl0 # 256-bit safe key
+  expiration: 43200000 # 12 hours
