@@ -32,6 +32,8 @@ public class TeamService {
                 .owner(user)
                 .name(request.getName())
                 .description(request.getDescription())
+                .goal(request.getGoal())
+                .introduce(request.getIntroduce())
                 .imageUrl(request.getImageUrl())
                 .category(request.getCategory())
                 .grade(request.getGrade())
@@ -71,6 +73,8 @@ public class TeamService {
         team.update(
                 request.getName(),
                 request.getDescription(),
+                request.getGoal(),
+                request.getIntroduce(),
                 request.getImageUrl(),
                 request.getCategory(),
                 request.getGrade(),

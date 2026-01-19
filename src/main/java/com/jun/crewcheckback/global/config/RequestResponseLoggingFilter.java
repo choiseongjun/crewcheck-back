@@ -21,7 +21,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request,1000);
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
 
         long startTime = System.currentTimeMillis();

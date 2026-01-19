@@ -12,6 +12,8 @@ import java.time.LocalDate;
 public class TeamCreateRequest {
     private String name;
     private String description;
+    private String goal;
+    private String introduce;
     private String imageUrl;
     private String category;
     private String grade;

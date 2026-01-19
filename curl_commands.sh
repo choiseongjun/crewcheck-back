@@ -28,6 +28,16 @@ curl -X POST "$BASE_URL/users/login" \
   }'
 echo -e "\n"
 
+echo "2.5. Reissuing Token..."
+# REPLACE WITH YOUR ACTUAL REFRESH TOKEN AFTER LOGIN
+REFRESH_TOKEN="YOUR_REFRESH_TOKEN_HERE"
+curl -X POST "$BASE_URL/users/reissue" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "'"$REFRESH_TOKEN"'"
+  }'
+echo -e "\n"
+
 # --- Configuration ---
 # REPLACE THIS WITH YOUR ACTUAL TOKEN AFTER LOGIN
 TOKEN="YOUR_ACCESS_TOKEN_HERE"
@@ -51,7 +61,6 @@ echo -e "\n"
 
 echo "4. Get All Teams..."
 curl -X GET "$BASE_URL/teams?page=0&size=10" \
-  -H "Authorization: Bearer $TOKEN"
 echo -e "\n"
 
 # REPLACE WITH ACTUAL TEAM ID

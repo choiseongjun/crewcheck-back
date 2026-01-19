@@ -12,6 +12,8 @@ public class TeamResponse {
     private String ownerName;
     private String name;
     private String description;
+    private String goal;
+    private String introduce;
     private String imageUrl;
     private String category;
     private String grade;
@@ -28,6 +30,8 @@ public class TeamResponse {
         this.ownerName = team.getOwner().getNickname();
         this.name = team.getName();
         this.description = team.getDescription();
+        this.goal = team.getGoal();
+        this.introduce = team.getIntroduce();
         this.imageUrl = team.getImageUrl();
         this.category = team.getCategory();
         this.grade = team.getGrade();

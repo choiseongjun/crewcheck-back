@@ -22,6 +22,9 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long accessTokenValidityInMilliseconds;
 
+    @Value("${jwt.refresh-expiration}")
+    private long refreshTokenValidityInMilliseconds;
+
     private Key key;
 
     @PostConstruct
@@ -32,6 +35,18 @@ public class JwtTokenProvider {
     public String createToken(String email) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String createRefreshToken(String email) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
 
         return Jwts.builder()
                 .setSubject(email)

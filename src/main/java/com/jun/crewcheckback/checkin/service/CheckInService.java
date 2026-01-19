@@ -38,6 +38,7 @@ public class CheckInService {
                 .user(user)
                 .team(team)
                 .content(request.getContent())
+                .difficultyLevel(request.getDifficultyLevel())
                 .imageUrl(request.getImageUrl())
                 .routineTitle(request.getRoutineTitle())
                 .build();

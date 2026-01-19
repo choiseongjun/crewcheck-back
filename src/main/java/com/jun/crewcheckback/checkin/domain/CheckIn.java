@@ -42,17 +42,20 @@ public class CheckIn extends BaseEntity {
     @Column(length = 20)
     private String status; // 'pending', 'approved', 'rejected'
 
+    private String difficultyLevel; //easy,normal,hard
+
     @CreationTimestamp
     @Column(name = "timestamp", updatable = false)
     private LocalDateTime timestamp;
 
     @Builder
-    public CheckIn(Team team, User user, String content, String imageUrl, String routineTitle, String status) {
+    public CheckIn(Team team, User user, String content, String imageUrl, String routineTitle, String status,String difficultyLevel) {
         this.team = team;
         this.user = user;
         this.content = content;
         this.imageUrl = imageUrl;
         this.routineTitle = routineTitle;
+        this.difficultyLevel = difficultyLevel;
         this.status = status != null ? status : "pending";
     }
 

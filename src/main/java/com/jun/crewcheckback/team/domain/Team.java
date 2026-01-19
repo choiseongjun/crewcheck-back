@@ -30,6 +30,10 @@ public class Team extends BaseEntity {
 
     private String description;
 
+    private String goal;
+
+    private String introduce;
+
     @Column(name = "image_url")
     private String imageUrl;
 
@@ -61,12 +65,15 @@ public class Team extends BaseEntity {
     private LocalDate startDate;
 
     @Builder
-    public Team(User owner, String name, String description, String imageUrl, String category, String grade,
+    public Team(User owner, String name, String description, String goal, String introduce, String imageUrl,
+            String category, String grade,
             Integer memberLimit, Boolean isPublic, Boolean requireApproval, String frequency, Integer durationDays,
             String commonMission, LocalDate startDate) {
         this.owner = owner;
         this.name = name;
         this.description = description;
+        this.goal = goal;
+        this.introduce = introduce;
         this.imageUrl = imageUrl;
         this.category = category;
         this.grade = grade != null ? grade : "C";
@@ -79,11 +86,14 @@ public class Team extends BaseEntity {
         this.startDate = startDate;
     }
 
-    public void update(String name, String description, String imageUrl, String category, String grade,
+    public void update(String name, String description, String goal, String introduce, String imageUrl, String category,
+            String grade,
             Integer memberLimit, Boolean isPublic, Boolean requireApproval, String frequency,
             Integer durationDays, String commonMission, LocalDate startDate) {
         this.name = name;
         this.description = description;
+        this.goal = goal;
+        this.introduce = introduce;
         this.imageUrl = imageUrl;
         this.category = category;
         this.grade = grade;

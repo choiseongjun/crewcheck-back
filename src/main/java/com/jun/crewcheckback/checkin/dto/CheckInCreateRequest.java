@@ -14,4 +14,5 @@ public class CheckInCreateRequest {
     private String content;
     private String imageUrl;
     private String routineTitle;
+    private String difficultyLevel;
 }
