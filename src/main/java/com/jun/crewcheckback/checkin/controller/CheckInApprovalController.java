@@ -2,6 +2,7 @@ package com.jun.crewcheckback.checkin.controller;
 
 import com.jun.crewcheckback.checkin.dto.CheckInApprovalRequest;
 import com.jun.crewcheckback.checkin.dto.CheckInApprovalResponse;
+import com.jun.crewcheckback.checkin.dto.CheckInResponse;
 import com.jun.crewcheckback.checkin.service.CheckInApprovalService;
 import com.jun.crewcheckback.global.common.ApiResponse;
 import com.jun.crewcheckback.team.dto.TeamMemberResponse;
@@ -42,6 +43,14 @@ public class CheckInApprovalController {
     public ResponseEntity<ApiResponse<List<TeamMemberResponse>>> getTeamMembers(
             @PathVariable UUID teamId) {
         List<TeamMemberResponse> response = teamService.getTeamMembers(teamId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/teams/{teamId}/today-approved")
+    public ResponseEntity<ApiResponse<List<CheckInResponse>>> getTodayApprovedCheckIns(
+            @PathVariable UUID teamId) {
+        List<CheckInResponse> response = checkInApprovalService
+                .getTodayApprovedCheckIns(teamId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

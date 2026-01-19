@@ -23,9 +23,16 @@ public interface CheckInRepository extends JpaRepository<CheckIn, UUID> {
 
     List<CheckIn> findAllByUserAndTimestampBetween(User user, LocalDateTime start, LocalDateTime end);
 
-    boolean existsByTeamAndUserAndTimestampBetweenAndStatus(Team team, User user, LocalDateTime start, LocalDateTime end, String status);
+    boolean existsByTeamAndUserAndTimestampBetweenAndStatus(Team team, User user, LocalDateTime start,
+            LocalDateTime end, String status);
 
-    List<CheckIn> findAllByUserAndTimestampBetweenAndStatus(User user, LocalDateTime start, LocalDateTime end, String status);
+    List<CheckIn> findAllByUserAndTimestampBetweenAndStatus(User user, LocalDateTime start, LocalDateTime end,
+            String status);
 
     List<CheckIn> findAllByUser(User user);
+
+    List<CheckIn> findAllByTeamAndStatusAndTimestampBetween(Team team, String status, LocalDateTime start,
+            LocalDateTime end);
+
+    List<CheckIn> findAllByTeamIdAndTimestampBetween(UUID teamId, LocalDateTime start, LocalDateTime end);
 }
