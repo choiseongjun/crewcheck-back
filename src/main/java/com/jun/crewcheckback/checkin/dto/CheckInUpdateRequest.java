@@ -10,5 +10,7 @@ import lombok.Setter;
 public class CheckInUpdateRequest {
     private String content;
     private String imageUrl;
+    private String status;
     private String routineTitle;
+    private String difficultyLevel;
 }

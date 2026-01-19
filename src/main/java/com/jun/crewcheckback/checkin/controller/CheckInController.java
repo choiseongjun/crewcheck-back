@@ -1,8 +1,6 @@
 package com.jun.crewcheckback.checkin.controller;
 
-import com.jun.crewcheckback.checkin.dto.CheckInCreateRequest;
-import com.jun.crewcheckback.checkin.dto.CheckInResponse;
-import com.jun.crewcheckback.checkin.dto.CheckInUpdateRequest;
+import com.jun.crewcheckback.checkin.dto.*;
 import com.jun.crewcheckback.checkin.service.CheckInService;
 import com.jun.crewcheckback.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +56,49 @@ public class CheckInController {
             @AuthenticationPrincipal UserDetails userDetails) {
         checkInService.deleteCheckIn(checkInId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @GetMapping("/todo")
+    public ResponseEntity<ApiResponse<TodoResponse>> getTodo(
+            @RequestParam(required = false) LocalDate date,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TodoResponse response = checkInService.getTodo(userDetails.getUsername(),
+                date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/todo/all")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getTodoAll(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TodoAllResponse response = checkInService
+                .getTodoAll(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<StatsResponse>> getStats(
+            @RequestParam String period,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        StatsResponse response = checkInService.getStats(userDetails.getUsername(),
+                period);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/grass")
+    public ResponseEntity<ApiResponse<List<GrassResponse>>> getGrass(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        List<GrassResponse> response = checkInService
+                .getGrass(userDetails.getUsername(), year, month);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/daily-summary")
+    public ResponseEntity<ApiResponse<DailyCheckInSummaryResponse>> getDailySummary(
+            @RequestParam(required = false) LocalDate date,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        DailyCheckInSummaryResponse response = checkInService.getDailySummary(userDetails.getUsername(), date);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

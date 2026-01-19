@@ -16,6 +16,7 @@ public class CheckInResponse {
     private String routineTitle;
     private String status;
     private LocalDateTime timestamp;
+    private String difficultyLevel;
 
     public CheckInResponse(CheckIn checkIn) {
         this.id = checkIn.getId();
@@ -26,5 +27,6 @@ public class CheckInResponse {
         this.routineTitle = checkIn.getRoutineTitle();
         this.status = checkIn.getStatus();
         this.timestamp = checkIn.getTimestamp();
+        this.difficultyLevel = checkIn.getDifficultyLevel();
     }
 }

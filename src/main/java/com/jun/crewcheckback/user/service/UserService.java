@@ -136,6 +136,12 @@ public class UserService {
         return new TokenResponse(newAccessToken, newRefreshTokenValue, "Bearer");
     }
 
+    public UserResponse getUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserResponse(user);
+    }
+
     private String parseDeviceInfo(String userAgent) {
         if (userAgent == null) {
             return "Unknown";

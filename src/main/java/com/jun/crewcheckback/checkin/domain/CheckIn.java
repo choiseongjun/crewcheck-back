@@ -63,9 +63,11 @@ public class CheckIn extends BaseEntity {
         this.status = status;
     }
 
-    public void update(String content, String imageUrl, String routineTitle) {
+    public void update(String content, String imageUrl, String routineTitle,String status,String  difficultyLevel) {
         this.content = content;
         this.imageUrl = imageUrl;
         this.routineTitle = routineTitle;
+        this.status = status != null ? status : "pending";
+        this.difficultyLevel = difficultyLevel;
     }
 }

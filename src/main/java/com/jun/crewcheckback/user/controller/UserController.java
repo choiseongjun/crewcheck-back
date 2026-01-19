@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,11 +36,12 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LogoutRequest request) {
-//        userService.logout(request.getRefreshToken());
-//        return ResponseEntity.ok(ApiResponse.success(null));
-//    }
+    // @PostMapping("/logout")
+    // public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LogoutRequest
+    // request) {
+    // userService.logout(request.getRefreshToken());
+    // return ResponseEntity.ok(ApiResponse.success(null));
+    // }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logoutAll(@AuthenticationPrincipal UserDetails userDetails) {
@@ -51,6 +53,12 @@ public class UserController {
     public ResponseEntity<ApiResponse<TokenResponse>> reissue(
             @RequestBody ReissueRequest request) {
         TokenResponse response = userService.reissue(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        UserResponse response = userService.getUser(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

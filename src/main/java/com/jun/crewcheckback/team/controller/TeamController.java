@@ -56,4 +56,20 @@ public class TeamController {
         teamService.deleteTeam(teamId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PostMapping("/{teamId}/members")
+    public ResponseEntity<ApiResponse<com.jun.crewcheckback.team.dto.TeamMemberResponse>> joinTeam(
+            @PathVariable UUID teamId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        com.jun.crewcheckback.team.dto.TeamMemberResponse response = teamService.joinTeam(teamId,
+                userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @DeleteMapping("/{teamId}/members")
+    public ResponseEntity<ApiResponse<Void>> leaveTeam(@PathVariable UUID teamId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        teamService.leaveTeam(teamId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

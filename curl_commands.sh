@@ -148,7 +148,27 @@ curl -X DELETE "$BASE_URL/check-in-approvals/$APPROVAL_ID" \
   -H "Authorization: Bearer $TOKEN"
 echo -e "\n"
 
-echo "14. Delete CheckIn..."
-# curl -X DELETE "$BASE_URL/check-ins/$CHECKIN_ID" \
-#   -H "Authorization: Bearer $TOKEN"
-echo -e "Delete CheckIn command commented out.\n"
+echo "15. Get Daily Todo List..."
+curl -X GET "$BASE_URL/check-ins/todo" \
+  -H "Authorization: Bearer $TOKEN"
+echo -e "\n"
+
+echo "15-1. Get All Todo History..."
+curl -X GET "$BASE_URL/check-ins/todo/all" \
+  -H "Authorization: Bearer $TOKEN"
+echo -e "\n"
+
+echo "16. Get Weekly Statistics..."
+curl -X GET "$BASE_URL/check-ins/stats?period=WEEK" \
+  -H "Authorization: Bearer $TOKEN"
+echo -e "\n"
+
+echo "17. Get Monthly Statistics..."
+curl -X GET "$BASE_URL/check-ins/stats?period=MONTH" \
+  -H "Authorization: Bearer $TOKEN"
+echo -e "\n"
+
+echo "18. Get Grass (Contribution Graph)..."
+curl -X GET "$BASE_URL/check-ins/grass" \
+  -H "Authorization: Bearer $TOKEN"
+echo -e "\n"
