@@ -11,8 +11,11 @@ import java.util.Optional;
 public interface TeamRepository extends JpaRepository<Team, UUID> {
     Optional<Team> findByIdAndDeletedYn(UUID id, String deletedYn);
 
-    @org.springframework.data.jpa.repository.Query("SELECT t FROM Team t WHERE t.deletedYn = 'N' " +
+    @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM teams t WHERE t.deleted_yn = 'N' " +
             "AND (:category IS NULL OR :category = '전체' OR t.category = :category) " +
-            "AND (:keyword IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+            "AND (:keyword IS NULL OR t.name ILIKE :keyword)", countQuery = "SELECT count(*) FROM teams t WHERE t.deleted_yn = 'N' "
+                    +
+                    "AND (:category IS NULL OR :category = '전체' OR t.category = :category) " +
+                    "AND (:keyword IS NULL OR t.name ILIKE :keyword)", nativeQuery = true)
     Page<Team> findTeams(String category, String keyword, Pageable pageable);
 }

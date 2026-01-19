@@ -60,7 +60,20 @@ public class TeamService {
         Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
-        List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository.findAllByTeamId(teamId);
+        return createTeamResponseWithStats(team);
+    }
+
+    public Page<TeamResponse> getTeams(String category, String keyword, Pageable pageable) {
+        String searchKeyword = keyword;
+        if (keyword != null && !keyword.isEmpty()) {
+            searchKeyword = "%" + keyword.toLowerCase() + "%";
+        }
+        return teamRepository.findTeams(category, searchKeyword, pageable)
+                .map(this::createTeamResponseWithStats);
+    }
+
+    private TeamResponse createTeamResponseWithStats(Team team) {
+        List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository.findAllByTeamId(team.getId());
         int totalCheckIns = 0;
         int approvedCheckIns = 0;
 
@@ -74,17 +87,6 @@ public class TeamService {
         int rate = totalCheckIns > 0 ? (int) ((double) approvedCheckIns / totalCheckIns * 100) : 0;
         int currentMemberCount = members.size();
         return new TeamResponse(team, rate, currentMemberCount);
-    }
-
-    public Page<TeamResponse> getTeams(String category, String keyword, Pageable pageable) {
-        return teamRepository.findTeams(category, keyword, pageable)
-                .map(team -> {
-                    // Note: This might cause N+1 problem if there are many teams.
-                    // Ideally, we should use a batch query or subselect.
-                    // For now, assuming reasonable page size/usage.
-                    int memberCount = teamMemberRepository.findAllByTeamId(team.getId()).size();
-                    return new TeamResponse(team, 0, memberCount);
-                });
     }
 
     @Transactional

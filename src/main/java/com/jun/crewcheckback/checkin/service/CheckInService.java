@@ -165,7 +165,7 @@ public class CheckInService {
                 .collect(Collectors.toList());
     }
 
-    public com.jun.crewcheckback.checkin.dto.TodoAllResponse getTodoAll(String email) {
+    public TodoAllResponse getTodoAll(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
