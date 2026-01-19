@@ -37,8 +37,11 @@ public class TeamController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<TeamResponse>>> getTeams(@PageableDefault(size = 10) Pageable pageable) {
-        Page<TeamResponse> responses = teamService.getTeams(pageable);
+    public ResponseEntity<ApiResponse<Page<TeamResponse>>> getTeams(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<TeamResponse> responses = teamService.getTeams(category, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

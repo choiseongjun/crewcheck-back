@@ -24,8 +24,10 @@ public class TeamResponse {
     private Integer durationDays;
     private String commonMission;
     private LocalDate startDate;
+    private int achievementRate;
+    private int currentMemberCount;
 
-    public TeamResponse(Team team) {
+    public TeamResponse(Team team, int achievementRate, int currentMemberCount) {
         this.id = team.getId();
         this.ownerName = team.getOwner().getNickname();
         this.name = team.getName();
@@ -42,5 +44,15 @@ public class TeamResponse {
         this.durationDays = team.getDurationDays();
         this.commonMission = team.getCommonMission();
         this.startDate = team.getStartDate();
+        this.achievementRate = achievementRate;
+        this.currentMemberCount = currentMemberCount;
+    }
+
+    public TeamResponse(Team team, int achievementRate) {
+        this(team, achievementRate, 0);
+    }
+
+    public TeamResponse(Team team) {
+        this(team, 0, 0);
     }
 }

@@ -27,6 +27,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final com.jun.crewcheckback.checkin.repository.CheckInRepository checkInRepository;
 
     @Transactional
     public TeamResponse createTeam(TeamCreateRequest request, String email) {
@@ -58,12 +59,32 @@ public class TeamService {
     public TeamResponse getTeam(UUID teamId) {
         Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
-        return new TeamResponse(team);
+
+        List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository.findAllByTeamId(teamId);
+        int totalCheckIns = 0;
+        int approvedCheckIns = 0;
+
+        for (com.jun.crewcheckback.team.domain.TeamMember member : members) {
+            List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
+                    .findAllByUser(member.getUser());
+            totalCheckIns += checkIns.size();
+            approvedCheckIns += checkIns.stream().filter(c -> "approved".equals(c.getStatus())).count();
+        }
+
+        int rate = totalCheckIns > 0 ? (int) ((double) approvedCheckIns / totalCheckIns * 100) : 0;
+        int currentMemberCount = members.size();
+        return new TeamResponse(team, rate, currentMemberCount);
     }
 
-    public Page<TeamResponse> getTeams(Pageable pageable) {
-        return teamRepository.findAllByDeletedYn("N", pageable)
-                .map(TeamResponse::new);
+    public Page<TeamResponse> getTeams(String category, String keyword, Pageable pageable) {
+        return teamRepository.findTeams(category, keyword, pageable)
+                .map(team -> {
+                    // Note: This might cause N+1 problem if there are many teams.
+                    // Ideally, we should use a batch query or subselect.
+                    // For now, assuming reasonable page size/usage.
+                    int memberCount = teamMemberRepository.findAllByTeamId(team.getId()).size();
+                    return new TeamResponse(team, 0, memberCount);
+                });
     }
 
     @Transactional
@@ -112,7 +133,14 @@ public class TeamService {
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
         return teamMemberRepository.findAllByTeamId(teamId).stream()
-                .map(TeamMemberResponse::new)
+                .map(member -> {
+                    List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
+                            .findAllByUser(member.getUser());
+                    int total = checkIns.size();
+                    int approved = (int) checkIns.stream().filter(c -> "approved".equals(c.getStatus())).count();
+                    int rate = total > 0 ? (int) ((double) approved / total * 100) : 0;
+                    return new TeamMemberResponse(member, rate);
+                })
                 .collect(Collectors.toList());
     }
 

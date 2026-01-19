@@ -15,8 +15,9 @@ public class TeamMemberResponse {
     private String role;
     private String status;
     private LocalDateTime joinedAt;
+    private int achievementRate;
 
-    public TeamMemberResponse(TeamMember teamMember) {
+    public TeamMemberResponse(TeamMember teamMember, int achievementRate) {
         this.userId = teamMember.getUser().getId();
         this.nickname = teamMember.getUser().getNickname();
         this.email = teamMember.getUser().getEmail();
@@ -24,5 +25,10 @@ public class TeamMemberResponse {
         this.role = teamMember.getRole();
         this.status = teamMember.getStatus();
         this.joinedAt = teamMember.getJoinedAt();
+        this.achievementRate = achievementRate;
+    }
+
+    public TeamMemberResponse(TeamMember teamMember) {
+        this(teamMember, 0);
     }
 }
