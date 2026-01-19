@@ -1,0 +1,33 @@
+1. 단일 파일 업로드
+                                                                                                       curl -X POST http://localhost:8080/api/files \
+    -H "Authorization: Bearer {ACCESS_TOKEN}" \                                                      
+    -F "file=@/path/to/image.jpg"
+
+  2. 다중 파일 업로드
+
+  curl -X POST http://localhost:8080/api/files/multiple \
+    -H "Authorization: Bearer {ACCESS_TOKEN}" \
+    -F "files=@/path/to/image1.jpg" \
+    -F "files=@/path/to/image2.png" \
+    -F "files=@/path/to/video.mp4"
+
+  3. 파일 정보 조회
+
+  curl -X GET http://localhost:8080/api/files/{fileId} \
+    -H "Authorization: Bearer {ACCESS_TOKEN}"
+
+  4. 내 파일 목록 조회
+
+  curl -X GET http://localhost:8080/api/files/my \
+    -H "Authorization: Bearer {ACCESS_TOKEN}"
+
+  5. 타입별 내 파일 목록 조회
+
+  # IMAGE, VIDEO, AUDIO, DOCUMENT 중 선택
+  curl -X GET http://localhost:8080/api/files/my/IMAGE \
+    -H "Authorization: Bearer {ACCESS_TOKEN}"
+
+  6. 파일 삭제
+
+  curl -X DELETE http://localhost:8080/api/files/{fileId} \
+    -H "Authorization: Bearer {ACCESS_TOKEN}"

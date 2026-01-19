@@ -19,3 +19,15 @@ jwt:
   secret: c2lsdmVybGluaW5nLXRoZS1fcXVyZS10by1teS1saWZlLXRoZS1iZXN0LW11c2ljLWluLXRoZS13b3JsZC1ob3BlLXlvdS1saWtlLWl0 # 256-bit safe key
   expiration: 43200000 # 12 hours
   refresh-expiration: 604800000 # 7 days
+cloud:
+  aws:
+    s3:
+      bucket: crewcheck-prod
+    region:
+      static: ap-northeast-2
+    credentials:
+      access-key: 
+      secret-key: 
+
+fcm:
+  certification: firebase-service-account.json
