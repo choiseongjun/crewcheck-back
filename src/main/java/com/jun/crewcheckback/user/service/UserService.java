@@ -2,20 +2,19 @@ package com.jun.crewcheckback.user.service;
 
 import com.jun.crewcheckback.global.security.JwtTokenProvider;
 import com.jun.crewcheckback.user.domain.RefreshToken;
-import com.jun.crewcheckback.user.dto.LoginRequest;
-import com.jun.crewcheckback.user.dto.TokenResponse;
+import com.jun.crewcheckback.user.dto.*;
 import com.jun.crewcheckback.user.domain.User;
-import com.jun.crewcheckback.user.dto.UserResponse;
-import com.jun.crewcheckback.user.dto.UserSignUpRequest;
 import com.jun.crewcheckback.user.repository.RefreshTokenRepository;
 import com.jun.crewcheckback.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +138,30 @@ public class UserService {
     public UserResponse getUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserResponse(user);
+    }
+
+    public List<UserRankingResponse> getUserRanking() {
+        List<Object[]> results = userRepository
+                .findUserAchievementRates(PageRequest.of(0, 10));
+
+        return results.stream()
+                .map(result -> {
+                    User user = (User) result[0];
+                    int rate = ((Number) result[1]).intValue();
+                    return new UserRankingResponse(user, rate);
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional
+    public UserResponse updateUser(String email, UserUpdateRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.update(request.getNickname(), request.getBio(), request.getProfileImageUrl(), request.getBirthDate(),
+                request.getGender());
+
         return new UserResponse(user);
     }
 

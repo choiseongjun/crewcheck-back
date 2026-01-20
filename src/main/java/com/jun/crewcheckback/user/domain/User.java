@@ -52,4 +52,22 @@ public class User extends BaseEntity {
         this.birthDate = birthDate;
         this.gender = gender;
     }
+
+    public void update(String nickname, String bio, String profileImageUrl, LocalDate birthDate, Gender gender) {
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+        if (bio != null) {
+            this.bio = bio;
+        }
+        if (profileImageUrl != null) {
+            this.profileImageUrl = profileImageUrl;
+        }
+        if (birthDate != null) {
+            this.birthDate = birthDate;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+    }
 }

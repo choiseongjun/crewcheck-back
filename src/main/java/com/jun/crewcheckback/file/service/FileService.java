@@ -26,8 +26,10 @@ public class FileService {
     private final UploadFileRepository uploadFileRepository;
     private final UserRepository userRepository;
 
-    private static final List<String> IMAGE_TYPES = List.of("image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp");
-    private static final List<String> VIDEO_TYPES = List.of("video/mp4", "video/quicktime", "video/x-msvideo", "video/webm");
+    private static final List<String> IMAGE_TYPES = List.of("image/jpeg", "image/png", "image/gif", "image/webp",
+            "image/bmp");
+    private static final List<String> VIDEO_TYPES = List.of("video/mp4", "video/quicktime", "video/x-msvideo",
+            "video/webm");
     private static final List<String> AUDIO_TYPES = List.of("audio/mpeg", "audio/wav", "audio/ogg", "audio/aac");
 
     @Transactional
@@ -51,9 +53,10 @@ public class FileService {
                 .build();
 
         UploadFile savedFile = uploadFileRepository.save(uploadFile);
-        String fileUrl = s3Service.generateFileUrl(savedFile.getFilePath());
+        // String fileUrl = s3Service.generateFileUrl(savedFile.getFilePath());
 
-        return FileUploadResponse.from(savedFile, fileUrl);
+        // Return relative path as requested by user
+        return FileUploadResponse.from(savedFile, savedFile.getFilePath());
     }
 
     @Transactional

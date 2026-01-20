@@ -17,5 +17,16 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
                     +
                     "AND (:category IS NULL OR :category = '전체' OR t.category = :category) " +
                     "AND (:keyword IS NULL OR t.name ILIKE :keyword)", nativeQuery = true)
-    Page<Team> findTeams(String category, String keyword, Pageable pageable);
+    Page<Team> findTeams(@org.springframework.data.repository.query.Param("category") String category,
+            @org.springframework.data.repository.query.Param("keyword") String keyword, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT t as team, " +
+            "COALESCE(CAST(SUM(CASE WHEN c.status = 'approved' THEN 1 ELSE 0 END) AS double) / NULLIF(COUNT(c.id), 0) * 100, 0) as rate "
+            +
+            "FROM Team t " +
+            "LEFT JOIN CheckIn c ON c.team = t " +
+            "WHERE t.deletedYn = 'N' " +
+            "GROUP BY t " +
+            "ORDER BY rate DESC")
+    java.util.List<Object[]> findTeamAchievementRates(Pageable pageable);
 }

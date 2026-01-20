@@ -31,6 +31,7 @@ public class CheckInApprovalService {
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final com.jun.crewcheckback.team.repository.TeamMemberRepository teamMemberRepository;
 
     @Transactional
     public CheckInApprovalResponse createApproval(UUID checkInId, CheckInApprovalRequest request, String email) {
@@ -40,18 +41,17 @@ public class CheckInApprovalService {
         CheckIn checkIn = checkInRepository.findByIdAndDeletedYn(checkInId, "N")
                 .orElseThrow(() -> new IllegalArgumentException("Check-in not found"));
 
-        // Only team owner can approve/reject? Assuming yes for now.
-        if (!checkIn.getTeam().getOwner().equals(approver)) {
-            // throw new IllegalArgumentException("Only team owner can approve/reject
-            // check-ins");
-            // For now, let's allow it or maybe check simple logic.
-            // Let's enforce owner check.
-            if (!checkIn.getTeam().getOwner().getId().equals(approver.getId())) {
-                throw new IllegalArgumentException("Only team owner can approve/reject check-ins");
-            }
+        // 1. Self-approval check: Approver cannot be the same as the check-in creator
+        if (checkIn.getUser().getId().equals(approver.getId())) {
+            throw new IllegalArgumentException("Cannot approve your own check-in");
         }
 
-        checkIn.updateStatus(request.getStatus()); // 'approved' or 'rejected'
+        // 2. Team membership check: Approver must be a member of the team
+        teamMemberRepository.findByTeamAndUser(checkIn.getTeam(), approver)
+                .orElseThrow(() -> new IllegalArgumentException("Only team members can approve check-ins"));
+
+//        checkIn.updateStatus(request.getStatus()); // 'approved' or 'rejected'
+//        checkInRepository.save(checkIn); // Explicitly save to ensure status update is persisted
 
         CheckInApproval approval = CheckInApproval.builder()
                 .checkIn(checkIn)
@@ -73,6 +73,7 @@ public class CheckInApprovalService {
 
         // Revert check-in status to pending
         approval.getCheckIn().updateStatus("pending");
+        checkInRepository.save(approval.getCheckIn()); // Explicitly save status revert
 
         approval.delete();
     }
@@ -85,14 +86,14 @@ public class CheckInApprovalService {
         LocalDateTime start = LocalDateTime.of(LocalDate.now(java.time.ZoneId.of("Asia/Seoul")), LocalTime.MIN);
         LocalDateTime end = LocalDateTime.of(LocalDate.now(java.time.ZoneId.of("Asia/Seoul")), LocalTime.MAX);
 
-        System.out.println("start==" + start);
-        System.out.println("end==" + end);
-
         // Fetch all check-ins for the team today, then filter by status 'approved'
         // (case-insensitive)
         return checkInRepository.findAllByTeamIdAndTimestampBetween(teamId, start, end).stream()
                 .filter(c -> "approved".equalsIgnoreCase(c.getStatus()))
-                .map(CheckInResponse::new)
+                .map(checkIn -> {
+                    List<CheckInApproval> approvals = checkInApprovalRepository.findByCheckInIdAndDeletedYn(checkIn.getId(), "N");
+                    return new CheckInResponse(checkIn, approvals);
+                })
                 .collect(Collectors.toList());
     }
 }

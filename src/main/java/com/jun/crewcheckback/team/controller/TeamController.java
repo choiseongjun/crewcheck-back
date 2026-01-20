@@ -75,4 +75,10 @@ public class TeamController {
         teamService.leaveTeam(teamId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<ApiResponse<java.util.List<TeamResponse>>> getRanking() {
+        java.util.List<TeamResponse> response = teamService.getRanking();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

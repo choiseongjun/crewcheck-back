@@ -2,6 +2,7 @@ package com.jun.crewcheckback.user.controller;
 
 import com.jun.crewcheckback.global.common.ApiResponse;
 import com.jun.crewcheckback.user.dto.*;
+import com.jun.crewcheckback.user.dto.UserUpdateRequest;
 import com.jun.crewcheckback.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -59,6 +62,20 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
         UserResponse response = userService.getUser(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<ApiResponse<List<UserRankingResponse>>> getUserRanking() {
+        List<UserRankingResponse> response = userService.getUserRanking();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> updateMe(
+            @RequestBody UserUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UserResponse response = userService.updateUser(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

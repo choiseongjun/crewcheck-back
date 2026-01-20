@@ -176,7 +176,6 @@ public class TeamService {
     public void leaveTeam(UUID teamId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
         Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
@@ -188,5 +187,21 @@ public class TeamService {
         }
 
         teamMemberRepository.delete(teamMember);
+    }
+
+    public List<TeamResponse> getRanking() {
+        // Get top 10 teams and rates directly from TeamRepository
+        List<Object[]> results = teamRepository
+                .findTeamAchievementRates(org.springframework.data.domain.PageRequest.of(0, 10));
+
+        return results.stream()
+                .map(result -> {
+                    Team team = (Team) result[0];
+                    int rate = ((Number) result[1]).intValue();
+
+                    int currentMemberCount = teamMemberRepository.findAllByTeamId(team.getId()).size();
+                    return new TeamResponse(team, rate, currentMemberCount);
+                })
+                .collect(Collectors.toList());
     }
 }
