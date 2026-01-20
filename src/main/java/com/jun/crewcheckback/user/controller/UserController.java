@@ -1,5 +1,7 @@
 package com.jun.crewcheckback.user.controller;
 
+import com.jun.crewcheckback.checkin.dto.GrassResponse;
+import com.jun.crewcheckback.checkin.dto.TodoAllResponse;
 import com.jun.crewcheckback.global.common.ApiResponse;
 import com.jun.crewcheckback.user.dto.*;
 import com.jun.crewcheckback.user.dto.UserUpdateRequest;
@@ -75,12 +77,46 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/grass")
-    public ResponseEntity<ApiResponse<java.util.List<com.jun.crewcheckback.checkin.dto.GrassResponse>>> getUserGrass(
+    public ResponseEntity<ApiResponse<java.util.List<GrassResponse>>> getUserGrass(
             @PathVariable java.util.UUID userId,
             @RequestParam int year,
             @RequestParam int month) {
-        java.util.List<com.jun.crewcheckback.checkin.dto.GrassResponse> response = checkInService.getUserGrass(userId,
+        java.util.List<GrassResponse> response = checkInService.getUserGrass(userId,
                 year, month);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{userId}/todo/weekly")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getUserWeeklyTodo(
+            @PathVariable java.util.UUID userId,
+            @RequestParam(required = false) java.time.LocalDate date) {
+        TodoAllResponse response = checkInService.getUserWeeklyTodo(userId,
+                date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{userId}/todo/monthly")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getUserMonthlyTodo(
+            @PathVariable java.util.UUID userId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        TodoAllResponse response = checkInService.getUserMonthlyTodo(userId,
+                year, month);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{userId}/achievement-rate/weekly")
+    public ResponseEntity<ApiResponse<AchievementRateResponse>> getUserWeeklyAchievementRate(
+            @PathVariable java.util.UUID userId,
+            @RequestParam(required = false) java.time.LocalDate date) {
+        AchievementRateResponse response = checkInService.getUserWeeklyAchievementRate(userId, date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{userId}/achievement-rate/total")
+    public ResponseEntity<ApiResponse<AchievementRateResponse>> getUserTotalAchievementRate(
+            @PathVariable java.util.UUID userId) {
+        AchievementRateResponse response = checkInService.getUserTotalAchievementRate(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

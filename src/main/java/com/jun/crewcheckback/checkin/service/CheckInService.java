@@ -17,11 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -250,6 +247,66 @@ public class CheckInService {
         return getTodoAllByPeriod(user, start, end);
     }
 
+    public TodoAllResponse getUserWeeklyTodo(UUID userId, LocalDate date) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate startOfWeek = targetDate.minusDays(targetDate.getDayOfWeek().getValue() - 1);
+        LocalDateTime start = startOfWeek.atStartOfDay();
+        LocalDateTime end = startOfWeek.plusDays(7).atStartOfDay().minusNanos(1);
+
+        return getTodoAllByPeriod(user, start, end);
+    }
+
+    public TodoAllResponse getUserMonthlyTodo(UUID userId, int year, int month) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime end = start.plusMonths(1).minusNanos(1);
+
+        return getTodoAllByPeriod(user, start, end);
+    }
+
+    public com.jun.crewcheckback.user.dto.AchievementRateResponse getUserWeeklyAchievementRate(UUID userId,
+            LocalDate date) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate startOfWeek = targetDate.minusDays(targetDate.getDayOfWeek().getValue() - 1);
+        LocalDateTime start = startOfWeek.atStartOfDay();
+        LocalDateTime end = startOfWeek.plusDays(7).atStartOfDay().minusNanos(1);
+
+        List<CheckIn> checkIns = checkInRepository.findAllByUserAndTimestampBetween(user, start, end);
+
+        int totalCheckIns = checkIns.size();
+        int approvedCount = (int) checkIns.stream()
+                .filter(c -> "approved".equalsIgnoreCase(c.getStatus()))
+                .count();
+
+        double rate = totalCheckIns == 0 ? 0.0 : (double) approvedCount / totalCheckIns * 100;
+
+        return new com.jun.crewcheckback.user.dto.AchievementRateResponse(rate, totalCheckIns, approvedCount);
+    }
+
+    public com.jun.crewcheckback.user.dto.AchievementRateResponse getUserTotalAchievementRate(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        List<CheckIn> checkIns = checkInRepository.findAllByUser(user);
+
+        int totalCheckIns = checkIns.size();
+        int approvedCount = (int) checkIns.stream()
+                .filter(c -> "approved".equalsIgnoreCase(c.getStatus()))
+                .count();
+
+        double rate = totalCheckIns == 0 ? 0.0 : (double) approvedCount / totalCheckIns * 100;
+
+        return new com.jun.crewcheckback.user.dto.AchievementRateResponse(rate, totalCheckIns, approvedCount);
+    }
+
     private TodoAllResponse getTodoAllByPeriod(User user, LocalDateTime start, LocalDateTime end) {
         List<CheckIn> checkIns = checkInRepository.findAllByUserAndTimestampBetween(user, start, end);
         return mapCheckInsToTodoResponse(checkIns);
@@ -317,5 +374,42 @@ public class CheckInService {
             }
         }
         return new TodoAllResponse(approvedCheckIns, pendingCheckIns, rejectedCheckIns);
+    }
+
+    public StreakResponse getStreak(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        List<CheckIn> approvedCheckIns = checkInRepository.findAllByUserAndStatusAndDeletedYn(user, "approved", "N");
+
+        if (approvedCheckIns.isEmpty()) {
+            return new StreakResponse(0);
+        }
+
+        // 날짜별로 승인된 체크인이 있는지 확인 (중복 날짜 제거)
+        ZoneId seoulZone = ZoneId.of("Asia/Seoul");
+        Set<LocalDate> approvedDates = approvedCheckIns.stream()
+                .map(checkIn -> checkIn.getTimestamp().atZone(seoulZone).toLocalDate())
+                .collect(Collectors.toSet());
+
+        // 가장 최근 approved 날짜 찾기
+        LocalDate latestDate = approvedDates.stream()
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
+        if (latestDate == null) {
+            return new StreakResponse(0);
+        }
+
+        int streak = 0;
+        LocalDate checkDate = latestDate;
+
+        // 최근 날짜부터 역순으로 연속 일수 계산
+        while (approvedDates.contains(checkDate)) {
+            streak++;
+            checkDate = checkDate.minusDays(1);
+        }
+
+        return new StreakResponse(streak);
     }
 }

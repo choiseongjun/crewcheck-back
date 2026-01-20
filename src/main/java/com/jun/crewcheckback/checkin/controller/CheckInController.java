@@ -118,4 +118,11 @@ public class CheckInController {
         DailyCheckInSummaryResponse response = checkInService.getDailySummary(userDetails.getUsername(), date);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/streak")
+    public ResponseEntity<ApiResponse<StreakResponse>> getStreak(
+            @RequestParam UUID userId) {
+        StreakResponse response = checkInService.getStreak(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
