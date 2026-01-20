@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/api/v1/check-in-approvals/teams/*/today-approved",
                                 "/api/v1/check-ins/**",
                                 "/api/files/**",
-                                "/api/v1/teams/**")
+                                "/api/v1/teams/**",
+                                "/api/v1/fcm/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -83,6 +83,13 @@ public class TeamController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<java.util.List<TeamResponse>>> getMyTeams(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        java.util.List<TeamResponse> response = teamService.getMyJoinedTeams(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/{teamId}/members/{userId}/todo/weekly")
     public ResponseEntity<ApiResponse<com.jun.crewcheckback.checkin.dto.TodoAllResponse>> getTeamMemberWeeklyTodo(
             @PathVariable UUID teamId,

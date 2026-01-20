@@ -58,6 +58,10 @@ public class UserService {
             throw new IllegalArgumentException("Invalid password");
         }
 
+        if (request.getDeviceToken() != null && !request.getDeviceToken().isEmpty()) {
+            user.updateDeviceToken(request.getDeviceToken());
+        }
+
         String accessToken = jwtTokenProvider.createToken(user.getEmail());
         String refreshTokenValue = jwtTokenProvider.createRefreshToken(user.getEmail());
 

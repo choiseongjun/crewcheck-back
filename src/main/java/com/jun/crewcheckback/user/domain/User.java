@@ -70,4 +70,11 @@ public class User extends BaseEntity {
             this.gender = gender;
         }
     }
+
+    @Column(name = "device_token")
+    private String deviceToken;
+
+    public void updateDeviceToken(String deviceToken) {
+        this.deviceToken = deviceToken;
+    }
 }

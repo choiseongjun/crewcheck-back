@@ -1,145 +1,96 @@
-//package com.jun.crewcheckback.notification.service;
-//
-//import com.jun.crewcheckback.notification.domain.*;
-//import com.jun.crewcheckback.notification.dto.*;
-//import com.jun.crewcheckback.notification.repository.DeviceTokenRepository;
-//import com.jun.crewcheckback.notification.repository.NotificationRepository;
-//import com.jun.crewcheckback.user.domain.User;
-//import com.jun.crewcheckback.user.repository.UserRepository;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.util.List;
-//import java.util.Map;
-//import java.util.UUID;
-//
-//@Slf4j
-//@Service
-//@RequiredArgsConstructor
-//@Transactional(readOnly = true)
-//public class NotificationService {
-//
-//    private final FcmService fcmService;
-//    private final NotificationRepository notificationRepository;
-//    private final DeviceTokenRepository deviceTokenRepository;
-//    private final UserRepository userRepository;
-//
-//    @Transactional
-//    public void registerToken(String email, DeviceTokenRegisterRequest request) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        deviceTokenRepository.findByUserIdAndDeviceId(user.getId(), request.deviceId())
-//                .ifPresentOrElse(
-//                        token -> token.updateToken(request.fcmToken()),
-//                        () -> {
-//                            DeviceToken newToken = DeviceToken.builder()
-//                                    .user(user)
-//                                    .fcmToken(request.fcmToken())
-//                                    .deviceType(request.deviceType())
-//                                    .deviceId(request.deviceId())
-//                                    .build();
-//                            deviceTokenRepository.save(newToken);
-//                        }
-//                );
-//    }
-//
-//    @Transactional
-//    public void removeToken(String email, String deviceId) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        deviceTokenRepository.findByUserIdAndDeviceId(user.getId(), deviceId)
-//                .ifPresent(DeviceToken::deactivate);
-//    }
-//
-//    @Transactional
-//    public void sendToUser(UUID userId, String title, String body, NotificationType type, UUID referenceId) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        Notification notification = Notification.builder()
-//                .user(user)
-//                .title(title)
-//                .body(body)
-//                .notificationType(type)
-//                .referenceId(referenceId)
-//                .build();
-//
-//        notificationRepository.save(notification);
-//
-//        List<DeviceToken> tokens = deviceTokenRepository.findActiveTokensByUserId(userId);
-//        if (!tokens.isEmpty()) {
-//            List<String> fcmTokens = tokens.stream()
-//                    .map(DeviceToken::getFcmToken)
-//                    .toList();
-//
-//            Map<String, String> data = Map.of(
-//                    "type", type.name(),
-//                    "referenceId", referenceId != null ? referenceId.toString() : ""
-//            );
-//
-//            fcmService.sendMessages(fcmTokens, title, body, data);
-//            notification.markAsSent();
-//        }
-//    }
-//
-//    @Transactional
-//    public void sendToUsers(List<UUID> userIds, String title, String body, NotificationType type, UUID referenceId) {
-//        for (UUID userId : userIds) {
-//            sendToUser(userId, title, body, type, referenceId);
-//        }
-//    }
-//
-//    public List<NotificationResponse> getNotifications(String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-//                .stream()
-//                .map(NotificationResponse::from)
-//                .toList();
-//    }
-//
-//    public List<NotificationResponse> getUnreadNotifications(String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        return notificationRepository.findUnreadByUserId(user.getId())
-//                .stream()
-//                .map(NotificationResponse::from)
-//                .toList();
-//    }
-//
-//    public Long getUnreadCount(String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        return notificationRepository.countUnreadByUserId(user.getId());
-//    }
-//
-//    @Transactional
-//    public void markAsRead(UUID notificationId, String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        Notification notification = notificationRepository.findById(notificationId)
-//                .orElseThrow(() -> new RuntimeException("알림을 찾을 수 없습니다."));
-//
-//        if (!notification.getUser().getId().equals(user.getId())) {
-//            throw new RuntimeException("권한이 없습니다.");
-//        }
-//
-//        notification.markAsRead();
-//    }
-//
-//    @Transactional
-//    public void markAllAsRead(String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//
-//        notificationRepository.markAllAsReadByUserId(user.getId());
-//    }
-//}
+package com.jun.crewcheckback.notification.service;
+
+import com.jun.crewcheckback.notification.domain.NotificationSetting;
+import com.jun.crewcheckback.notification.dto.NotificationSettingResponse;
+import com.jun.crewcheckback.notification.dto.NotificationSettingUpdateRequest;
+import com.jun.crewcheckback.notification.repository.NotificationSettingRepository;
+import com.jun.crewcheckback.user.domain.User;
+import com.jun.crewcheckback.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class NotificationService {
+
+        private final NotificationSettingRepository notificationSettingRepository;
+        private final com.jun.crewcheckback.notification.repository.NotificationRepository notificationRepository;
+        private final UserRepository userRepository;
+        private final FcmService fcmService;
+
+        @Transactional
+        public void sendNewMemberNotification(com.jun.crewcheckback.team.domain.Team team, User newMember,
+                        List<User> recipients) {
+                String title = "새로운 팀원 알림";
+                String body = String.format("%s 팀에 %s 님이 합류했습니다!", team.getName(), newMember.getNickname());
+
+                for (User recipient : recipients) {
+                        NotificationSetting setting = notificationSettingRepository.findByUser(recipient)
+                                        .orElse(NotificationSetting.createDefault(recipient));
+
+                        if (setting.isNewMemberNotification()) {
+                                com.jun.crewcheckback.notification.domain.Notification notification = com.jun.crewcheckback.notification.domain.Notification
+                                                .builder()
+                                                .user(recipient)
+                                                .title(title)
+                                                .body(body)
+                                                .notificationType(
+                                                                com.jun.crewcheckback.notification.domain.NotificationType.TEAM)
+                                                .referenceId(team.getId())
+                                                .build();
+
+                                // FCM Push
+                                if (recipient.getDeviceToken() != null && !recipient.getDeviceToken().isEmpty()) {
+                                        try {
+                                                fcmService.sendMessage(recipient.getDeviceToken(), title, body);
+                                                notification.markAsSent();
+                                        } catch (Exception e) {
+                                                // FCM 전송 실패 시 로그만 남기고 알림은 저장
+                                                // log.error("FCM send failed", e);
+                                        }
+                                }
+
+                                notificationRepository.save(notification);
+                        }
+                }
+        }
+
+        @Transactional
+        public NotificationSettingResponse getSettings(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                NotificationSetting setting = notificationSettingRepository.findByUser(user)
+                                .orElseGet(() -> notificationSettingRepository
+                                                .save(NotificationSetting.createDefault(user)));
+
+                return new NotificationSettingResponse(setting);
+        }
+
+        @Transactional
+        public NotificationSettingResponse updateSettings(String email, NotificationSettingUpdateRequest request) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                NotificationSetting setting = notificationSettingRepository.findByUser(user)
+                                .orElseGet(() -> notificationSettingRepository
+                                                .save(NotificationSetting.createDefault(user)));
+
+                setting.update(
+                                request.checkInReminder(),
+                                request.teamActivityNotification(),
+                                request.streakNotification(),
+                                request.newMemberNotification(),
+                                request.achievementNotification(),
+                                request.doNotDisturbStart(),
+                                request.doNotDisturbEnd(),
+                                request.reminder09(),
+                                request.reminder12(),
+                                request.reminder18(),
+                                request.reminder21());
+
+                return new NotificationSettingResponse(setting);
+        }
+}
