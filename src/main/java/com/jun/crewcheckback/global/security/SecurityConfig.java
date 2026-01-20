@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/api/v1/users/**",
                                 "/api/v1/check-in-approvals/teams/*/members",
                                 "/api/v1/check-in-approvals/teams/*/today-approved",
+                                "/api/v1/check-ins/**",
                                 "/api/files/**",
                                 "/api/v1/teams/**")
                         .permitAll()

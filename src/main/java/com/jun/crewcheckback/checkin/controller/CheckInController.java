@@ -75,6 +75,23 @@ public class CheckInController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/todo/weekly")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getWeeklyTodo(
+            @RequestParam(required = false) LocalDate date,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TodoAllResponse response = checkInService.getWeeklyTodo(userDetails.getUsername(), date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/todo/monthly")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getMonthlyTodo(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TodoAllResponse response = checkInService.getMonthlyTodo(userDetails.getUsername(), year, month);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<StatsResponse>> getStats(
             @RequestParam String period,

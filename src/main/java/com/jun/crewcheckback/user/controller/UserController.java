@@ -10,9 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final com.jun.crewcheckback.checkin.service.CheckInService checkInService;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponse>> signUp(@RequestBody UserSignUpRequest request) {
@@ -68,6 +71,16 @@ public class UserController {
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<List<UserRankingResponse>>> getUserRanking() {
         List<UserRankingResponse> response = userService.getUserRanking();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{userId}/grass")
+    public ResponseEntity<ApiResponse<java.util.List<com.jun.crewcheckback.checkin.dto.GrassResponse>>> getUserGrass(
+            @PathVariable java.util.UUID userId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        java.util.List<com.jun.crewcheckback.checkin.dto.GrassResponse> response = checkInService.getUserGrass(userId,
+                year, month);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

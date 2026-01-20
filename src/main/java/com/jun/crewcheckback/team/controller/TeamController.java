@@ -22,6 +22,7 @@ import java.util.UUID;
 public class TeamController {
 
     private final TeamService teamService;
+    private final com.jun.crewcheckback.checkin.service.CheckInService checkInService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<TeamResponse>> createTeam(@RequestBody TeamCreateRequest request,
@@ -79,6 +80,41 @@ public class TeamController {
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<java.util.List<TeamResponse>>> getRanking() {
         java.util.List<TeamResponse> response = teamService.getRanking();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{teamId}/members/{userId}/todo/weekly")
+    public ResponseEntity<ApiResponse<com.jun.crewcheckback.checkin.dto.TodoAllResponse>> getTeamMemberWeeklyTodo(
+            @PathVariable UUID teamId,
+            @PathVariable UUID userId,
+            @RequestParam(required = false) java.time.LocalDate date) {
+        // We need to inject CheckInService here or delegate via TeamService.
+        // Given CheckInService holds the logic, it's cleaner to use it directly, but
+        // this is TeamController.
+        // Let's inject CheckInService into TeamController.
+        com.jun.crewcheckback.checkin.dto.TodoAllResponse response = checkInService.getTeamMemberWeeklyTodo(teamId,
+                userId, date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{teamId}/members/{userId}/todo/monthly")
+    public ResponseEntity<ApiResponse<com.jun.crewcheckback.checkin.dto.TodoAllResponse>> getTeamMemberMonthlyTodo(
+            @PathVariable UUID teamId,
+            @PathVariable UUID userId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        com.jun.crewcheckback.checkin.dto.TodoAllResponse response = checkInService.getTeamMemberMonthlyTodo(teamId,
+                userId, year, month);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{teamId}/members/{userId}/todo/daily")
+    public ResponseEntity<ApiResponse<com.jun.crewcheckback.checkin.dto.TodoAllResponse>> getTeamMemberDailyTodo(
+            @PathVariable UUID teamId,
+            @PathVariable UUID userId,
+            @RequestParam(required = false) java.time.LocalDate date) {
+        com.jun.crewcheckback.checkin.dto.TodoAllResponse response = checkInService.getTeamMemberDailyTodo(teamId,
+                userId, date);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

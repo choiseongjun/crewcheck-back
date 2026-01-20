@@ -148,6 +148,17 @@ public class CheckInService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        return getGrassForUser(user, year, month);
+    }
+
+    public List<GrassResponse> getUserGrass(UUID userId, int year, int month) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return getGrassForUser(user, year, month);
+    }
+
+    private List<GrassResponse> getGrassForUser(User user, int year, int month) {
         java.time.LocalDateTime start = java.time.LocalDateTime.of(year, month, 1, 0, 0);
         java.time.LocalDateTime end = start.plusMonths(1).minusSeconds(1);
 
@@ -214,5 +225,97 @@ public class CheckInService {
                 .collect(Collectors.toList());
 
         return new DailyCheckInSummaryResponse(completedCount, checkInResponses);
+    }
+
+    public TodoAllResponse getWeeklyTodo(String email, LocalDate date) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        // Adjust to Monday
+        LocalDate startOfWeek = targetDate.minusDays(targetDate.getDayOfWeek().getValue() - 1);
+        LocalDateTime start = startOfWeek.atStartOfDay();
+        LocalDateTime end = startOfWeek.plusDays(7).atStartOfDay().minusNanos(1);
+
+        return getTodoAllByPeriod(user, start, end);
+    }
+
+    public TodoAllResponse getMonthlyTodo(String email, int year, int month) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime end = start.plusMonths(1).minusNanos(1);
+
+        return getTodoAllByPeriod(user, start, end);
+    }
+
+    private TodoAllResponse getTodoAllByPeriod(User user, LocalDateTime start, LocalDateTime end) {
+        List<CheckIn> checkIns = checkInRepository.findAllByUserAndTimestampBetween(user, start, end);
+        return mapCheckInsToTodoResponse(checkIns);
+    }
+
+    public TodoAllResponse getTeamMemberWeeklyTodo(UUID teamId, UUID userId, LocalDate date) {
+        Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate startOfWeek = targetDate.minusDays(targetDate.getDayOfWeek().getValue() - 1);
+        LocalDateTime start = startOfWeek.atStartOfDay();
+        LocalDateTime end = startOfWeek.plusDays(7).atStartOfDay().minusNanos(1);
+
+        List<CheckIn> checkIns = checkInRepository.findAllByTeamAndUserAndTimestampBetween(team, user, start, end);
+        return mapCheckInsToTodoResponse(checkIns);
+    }
+
+    public TodoAllResponse getTeamMemberMonthlyTodo(UUID teamId, UUID userId, int year, int month) {
+        Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime end = start.plusMonths(1).minusNanos(1);
+
+        List<CheckIn> checkIns = checkInRepository.findAllByTeamAndUserAndTimestampBetween(team, user, start, end);
+        return mapCheckInsToTodoResponse(checkIns);
+    }
+
+    public TodoAllResponse getTeamMemberDailyTodo(UUID teamId, UUID userId, LocalDate date) {
+        Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDateTime start = targetDate.atStartOfDay();
+        LocalDateTime end = targetDate.atTime(LocalTime.MAX);
+
+        List<CheckIn> checkIns = checkInRepository.findAllByTeamAndUserAndTimestampBetween(team, user, start, end);
+        return mapCheckInsToTodoResponse(checkIns);
+    }
+
+    private TodoAllResponse mapCheckInsToTodoResponse(List<CheckIn> checkIns) {
+        List<CheckInResponse> approvedCheckIns = new ArrayList<>();
+        List<CheckInResponse> pendingCheckIns = new ArrayList<>();
+        List<CheckInResponse> rejectedCheckIns = new ArrayList<>();
+
+        for (CheckIn checkIn : checkIns) {
+            switch (checkIn.getStatus()) {
+                case "approved":
+                    approvedCheckIns.add(new CheckInResponse(checkIn));
+                    break;
+                case "rejected":
+                    rejectedCheckIns.add(new CheckInResponse(checkIn));
+                    break;
+                case "pending":
+                default:
+                    pendingCheckIns.add(new CheckInResponse(checkIn));
+                    break;
+            }
+        }
+        return new TodoAllResponse(approvedCheckIns, pendingCheckIns, rejectedCheckIns);
     }
 }
