@@ -1,6 +1,8 @@
 package com.jun.crewcheckback.notification.service;
 
+import com.jun.crewcheckback.notification.domain.Notification;
 import com.jun.crewcheckback.notification.domain.NotificationSetting;
+import com.jun.crewcheckback.notification.domain.NotificationType;
 import com.jun.crewcheckback.notification.dto.NotificationSettingResponse;
 import com.jun.crewcheckback.notification.dto.NotificationSettingUpdateRequest;
 import com.jun.crewcheckback.notification.repository.NotificationSettingRepository;
@@ -9,6 +11,8 @@ import com.jun.crewcheckback.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,13 +35,13 @@ public class NotificationService {
                                         .orElse(NotificationSetting.createDefault(recipient));
 
                         if (setting.isNewMemberNotification()) {
-                                com.jun.crewcheckback.notification.domain.Notification notification = com.jun.crewcheckback.notification.domain.Notification
+                                Notification notification = Notification
                                                 .builder()
                                                 .user(recipient)
                                                 .title(title)
                                                 .body(body)
                                                 .notificationType(
-                                                                com.jun.crewcheckback.notification.domain.NotificationType.TEAM)
+                                                                NotificationType.TEAM)
                                                 .referenceId(team.getId())
                                                 .build();
 

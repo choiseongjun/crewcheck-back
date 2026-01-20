@@ -25,9 +25,62 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.jun.crewcheckback.team.repository.TeamMemberRepository teamMemberRepository;
+    private final com.jun.crewcheckback.checkin.repository.CheckInRepository checkInRepository;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshTokenValidityInMilliseconds;
+
+    public UserStatsResponse getUserStats(java.util.UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        int teamCount = teamMemberRepository.findAllByUser(user).size();
+
+        List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
+                .findAllByUserAndStatusAndDeletedYn(user, "approved", "N");
+
+        int totalCheckInCount = checkIns.size();
+        int currentStreak = calculateStreak(checkIns);
+
+        return UserStatsResponse.of(teamCount, totalCheckInCount, currentStreak);
+    }
+
+    private int calculateStreak(List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns) {
+        if (checkIns.isEmpty())
+            return 0;
+
+        List<java.time.LocalDate> dates = checkIns.stream()
+                .map(c -> c.getTimestamp().toLocalDate())
+                .distinct()
+                .sorted(java.util.Comparator.reverseOrder())
+                .collect(java.util.stream.Collectors.toList());
+
+        if (dates.isEmpty())
+            return 0;
+
+        int streak = 0;
+        java.time.LocalDate current = java.time.LocalDate.now();
+
+        // Check if the latest check-in is today or yesterday
+        if (!dates.contains(current)) {
+            if (dates.contains(current.minusDays(1))) {
+                current = current.minusDays(1);
+            } else {
+                return 0; // Streak broken
+            }
+        }
+
+        for (java.time.LocalDate date : dates) {
+            if (date.equals(current)) {
+                streak++;
+                current = current.minusDays(1);
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
 
     @Transactional
     public UserResponse registerUser(UserSignUpRequest request) {

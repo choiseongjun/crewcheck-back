@@ -231,4 +231,16 @@ public class TeamService {
                                 .map(member -> createTeamResponseWithStats(member.getTeam()))
                                 .collect(Collectors.toList());
         }
+
+        public List<TeamResponse> getUserJoinedTeams(UUID userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository
+                                .findAllByUserAndStatus(user, "active");
+
+                return members.stream()
+                                .map(member -> createTeamResponseWithStats(member.getTeam()))
+                                .collect(Collectors.toList());
+        }
 }

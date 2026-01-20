@@ -120,6 +120,13 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/{userId}/stats")
+    public ResponseEntity<ApiResponse<UserStatsResponse>> getUserStats(
+            @PathVariable java.util.UUID userId) {
+        UserStatsResponse response = userService.getUserStats(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @org.springframework.web.bind.annotation.PutMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> updateMe(
             @RequestBody UserUpdateRequest request,
