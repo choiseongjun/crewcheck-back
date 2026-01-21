@@ -72,6 +72,21 @@ public class NotificationService {
         }
 
         @Transactional
+        public void sendStreakNotification(User user, int streakDays) {
+                NotificationSetting setting = notificationSettingRepository.findByUser(user)
+                                .orElse(NotificationSetting.createDefault(user));
+
+                if (!setting.isStreakNotification()) {
+                        return;
+                }
+
+                String title = "연속 달성 알림";
+                String body = String.format("축하합니다! %d일 연속 달성했습니다!", streakDays);
+
+                sendNotification(user, title, body, NotificationType.STREAK, null);
+        }
+
+        @Transactional
         public void sendKickNotification(com.jun.crewcheckback.team.domain.Team team, User user, String reason) {
                 String title = "팀 강퇴 알림";
                 String body = String.format("%s 팀에서 강퇴되었습니다. 사유: %s", team.getName(), reason);

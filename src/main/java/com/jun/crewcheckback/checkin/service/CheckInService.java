@@ -98,6 +98,12 @@ public class CheckInService {
                     .map(TeamMember::getUser)
                     .collect(Collectors.toList());
             notificationService.sendCheckInNotification(checkIn.getTeam(), checkIn.getUser(), checkIn, recipients);
+
+            // 연속 달성 알림
+            int streakDays = calculateStreakDays(checkIn.getUser());
+            if (streakDays > 1) {
+                notificationService.sendStreakNotification(checkIn.getUser(), streakDays);
+            }
         }
 
 
@@ -380,6 +386,33 @@ public class CheckInService {
 
         List<CheckIn> checkIns = checkInRepository.findAllByTeamAndUserAndTimestampBetween(team, user, start, end);
         return mapCheckInsToTodoResponse(checkIns);
+    }
+
+    private int calculateStreakDays(User user) {
+        List<CheckIn> approvedCheckIns = checkInRepository.findAllByUserAndStatusAndDeletedYn(user, "approved", "N");
+
+        if (approvedCheckIns.isEmpty()) {
+            return 0;
+        }
+
+        ZoneId seoulZone = ZoneId.of("Asia/Seoul");
+        Set<LocalDate> approvedDates = approvedCheckIns.stream()
+                .map(checkIn -> checkIn.getTimestamp().atZone(seoulZone).toLocalDate())
+                .collect(Collectors.toSet());
+
+        LocalDate today = LocalDate.now(seoulZone);
+        int streak = 0;
+
+        for (int i = 0; i < 365; i++) {
+            LocalDate checkDate = today.minusDays(i);
+            if (approvedDates.contains(checkDate)) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        return streak;
     }
 
     private TodoAllResponse mapCheckInsToTodoResponse(List<CheckIn> checkIns) {
