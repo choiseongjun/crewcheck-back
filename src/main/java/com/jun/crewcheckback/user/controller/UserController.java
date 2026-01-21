@@ -39,6 +39,15 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @PostMapping("/social-login")
+    public ResponseEntity<ApiResponse<TokenResponse>> socialLogin(@RequestBody SocialLoginRequest request,
+            HttpServletRequest httpRequest) {
+        String ipAddress = getClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        TokenResponse response = userService.socialLogin(request, ipAddress, userAgent);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logoutAll(@AuthenticationPrincipal UserDetails userDetails) {
         userService.logoutAll(userDetails.getUsername());

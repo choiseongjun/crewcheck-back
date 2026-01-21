@@ -41,9 +41,16 @@ public class User extends BaseEntity {
     @Column(length = 10)
     private Gender gender;
 
+    @Column(name = "auth_provider")
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
+
+    @Column(name = "social_id")
+    private String socialId;
+
     @Builder
     public User(String email, String password, String nickname, String profileImageUrl, String bio,
-            LocalDate birthDate, Gender gender) {
+            LocalDate birthDate, Gender gender, AuthProvider authProvider, String socialId) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -51,6 +58,8 @@ public class User extends BaseEntity {
         this.bio = bio;
         this.birthDate = birthDate;
         this.gender = gender;
+        this.authProvider = authProvider;
+        this.socialId = socialId;
     }
 
     public void update(String nickname, String bio, String profileImageUrl, LocalDate birthDate, Gender gender) {

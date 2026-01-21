@@ -100,6 +100,7 @@ public class UserService {
                 .profileImageUrl(request.getProfileImageUrl())
                 .birthDate(request.getBirthDate())
                 .gender(request.getGender())
+                .authProvider(com.jun.crewcheckback.user.domain.AuthProvider.EMAIL)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -119,6 +120,47 @@ public class UserService {
             user.updateDeviceToken(request.getDeviceToken());
         }
 
+        String accessToken = jwtTokenProvider.createToken(user.getEmail());
+        String refreshTokenValue = jwtTokenProvider.createRefreshToken(user.getEmail());
+
+        LocalDateTime expiresAt = LocalDateTime.now()
+                .plusSeconds(refreshTokenValidityInMilliseconds / 1000);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .token(refreshTokenValue)
+                .user(user)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .deviceInfo(parseDeviceInfo(userAgent))
+                .expiresAt(expiresAt)
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        return new TokenResponse(accessToken, refreshTokenValue, "Bearer");
+    }
+
+    @Transactional
+    public TokenResponse socialLogin(SocialLoginRequest request, String ipAddress, String userAgent) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseGet(() -> {
+                    // Create new user if not exists
+                    return userRepository.save(User.builder()
+                            .email(request.getEmail())
+                            .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString())) // Random password
+                            .nickname(request.getNickname())
+                            .profileImageUrl(request.getProfileImageUrl())
+                            .authProvider(request.getProvider())
+                            .socialId(request.getSocialId())
+                            .build());
+                });
+
+        // Update device token if provided
+        if (request.getDeviceToken() != null && !request.getDeviceToken().isEmpty()) {
+            user.updateDeviceToken(request.getDeviceToken());
+        }
+
+        // Generate tokens
         String accessToken = jwtTokenProvider.createToken(user.getEmail());
         String refreshTokenValue = jwtTokenProvider.createRefreshToken(user.getEmail());
 
