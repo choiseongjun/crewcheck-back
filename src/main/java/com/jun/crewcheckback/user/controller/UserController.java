@@ -11,15 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -43,13 +38,6 @@ public class UserController {
         TokenResponse response = userService.login(request, ipAddress, userAgent);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-
-    // @PostMapping("/logout")
-    // public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LogoutRequest
-    // request) {
-    // userService.logout(request.getRefreshToken());
-    // return ResponseEntity.ok(ApiResponse.success(null));
-    // }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logoutAll(@AuthenticationPrincipal UserDetails userDetails) {
@@ -77,18 +65,18 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/grass")
-    public ResponseEntity<ApiResponse<java.util.List<GrassResponse>>> getUserGrass(
-            @PathVariable java.util.UUID userId,
+    public ResponseEntity<ApiResponse<List<GrassResponse>>> getUserGrass(
+            @PathVariable UUID userId,
             @RequestParam int year,
             @RequestParam int month) {
-        java.util.List<GrassResponse> response = checkInService.getUserGrass(userId,
+        List<GrassResponse> response = checkInService.getUserGrass(userId,
                 year, month);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/{userId}/todo/weekly")
     public ResponseEntity<ApiResponse<TodoAllResponse>> getUserWeeklyTodo(
-            @PathVariable java.util.UUID userId,
+            @PathVariable UUID userId,
             @RequestParam(required = false) java.time.LocalDate date) {
         TodoAllResponse response = checkInService.getUserWeeklyTodo(userId,
                 date);
@@ -127,7 +115,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @org.springframework.web.bind.annotation.PutMapping("/me")
+    @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> updateMe(
             @RequestBody UserUpdateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {

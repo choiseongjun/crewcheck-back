@@ -1,5 +1,6 @@
 package com.jun.crewcheckback.user.service;
 
+import com.jun.crewcheckback.checkin.domain.CheckIn;
 import com.jun.crewcheckback.global.security.JwtTokenProvider;
 import com.jun.crewcheckback.user.domain.RefreshToken;
 import com.jun.crewcheckback.user.dto.*;
@@ -13,8 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +41,7 @@ public class UserService {
 
         int teamCount = teamMemberRepository.findAllByUser(user).size();
 
-        List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
+        List<CheckIn> checkIns = checkInRepository
                 .findAllByUserAndStatusAndDeletedYn(user, "approved", "N");
 
         int totalCheckInCount = checkIns.size();
@@ -46,21 +50,21 @@ public class UserService {
         return UserStatsResponse.of(teamCount, totalCheckInCount, currentStreak);
     }
 
-    private int calculateStreak(List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns) {
+    private int calculateStreak(List<CheckIn> checkIns) {
         if (checkIns.isEmpty())
             return 0;
 
-        List<java.time.LocalDate> dates = checkIns.stream()
+        List<LocalDate> dates = checkIns.stream()
                 .map(c -> c.getTimestamp().toLocalDate())
                 .distinct()
-                .sorted(java.util.Comparator.reverseOrder())
-                .collect(java.util.stream.Collectors.toList());
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
 
         if (dates.isEmpty())
             return 0;
 
         int streak = 0;
-        java.time.LocalDate current = java.time.LocalDate.now();
+        LocalDate current = LocalDate.now();
 
         // Check if the latest check-in is today or yesterday
         if (!dates.contains(current)) {
@@ -71,7 +75,7 @@ public class UserService {
             }
         }
 
-        for (java.time.LocalDate date : dates) {
+        for (LocalDate date : dates) {
             if (date.equals(current)) {
                 streak++;
                 current = current.minusDays(1);

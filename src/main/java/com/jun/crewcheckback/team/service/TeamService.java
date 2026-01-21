@@ -54,6 +54,17 @@ public class TeamService {
                                 .build();
 
                 Team savedTeam = teamRepository.save(team);
+
+                // Add creator as leader
+                com.jun.crewcheckback.team.domain.TeamMember teamMember = com.jun.crewcheckback.team.domain.TeamMember
+                                .builder()
+                                .team(savedTeam)
+                                .user(user)
+                                .role("leader")
+                                .status("active")
+                                .build();
+                teamMemberRepository.save(teamMember);
+
                 return new TeamResponse(savedTeam);
         }
 
@@ -81,7 +92,7 @@ public class TeamService {
 
                 for (com.jun.crewcheckback.team.domain.TeamMember member : members) {
                         List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
-                                        .findAllByUser(member.getUser());
+                                        .findAllByTeamAndUser(team, member.getUser());
                         totalCheckIns += checkIns.size();
                         approvedCheckIns += checkIns.stream().filter(c -> "approved".equals(c.getStatus())).count();
                 }
@@ -139,7 +150,7 @@ public class TeamService {
                 return teamMemberRepository.findAllByTeamId(teamId).stream()
                                 .map(member -> {
                                         List<com.jun.crewcheckback.checkin.domain.CheckIn> checkIns = checkInRepository
-                                                        .findAllByUser(member.getUser());
+                                                        .findAllByTeamAndUser(member.getTeam(), member.getUser());
                                         int total = checkIns.size();
                                         int approved = (int) checkIns.stream()
                                                         .filter(c -> "approved".equals(c.getStatus())).count();

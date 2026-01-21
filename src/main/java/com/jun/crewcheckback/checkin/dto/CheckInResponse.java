@@ -15,12 +15,15 @@ import java.util.stream.Collectors;
 public class CheckInResponse {
     private UUID id;
     private String userName;
+    private UUID userId;
     private String teamName;
     private String content;
     private String imageUrl;
     private String routineTitle;
     private String status;
     private LocalDateTime timestamp;
+    private String complex; // Just context matching, ignoring
+
     private String difficultyLevel;
     private List<ApproverInfo> approvers;
 
@@ -40,6 +43,7 @@ public class CheckInResponse {
     public CheckInResponse(CheckIn checkIn, List<CheckInApproval> approvals) {
         this.id = checkIn.getId();
         this.userName = checkIn.getUser().getNickname();
+        this.userId = checkIn.getUser().getId();
         this.teamName = checkIn.getTeam().getName();
         this.content = checkIn.getContent();
         this.imageUrl = checkIn.getImageUrl();
@@ -48,20 +52,22 @@ public class CheckInResponse {
         this.timestamp = checkIn.getTimestamp();
         this.difficultyLevel = checkIn.getDifficultyLevel();
         this.approvers = approvals.stream()
-                .map(approval -> new ApproverInfo(approval.getApprover()))
+                .map(ApproverInfo::new)
                 .collect(Collectors.toList());
     }
 
     @Getter
     public static class ApproverInfo {
         private UUID id;
+        private UUID approvalId;
         private String nickname;
         private String profileImageUrl;
 
-        public ApproverInfo(User user) {
-            this.id = user.getId();
-            this.nickname = user.getNickname();
-            this.profileImageUrl = user.getProfileImageUrl();
+        public ApproverInfo(CheckInApproval approval) {
+            this.id = approval.getApprover().getId();
+            this.approvalId = approval.getId();
+            this.nickname = approval.getApprover().getNickname();
+            this.profileImageUrl = approval.getApprover().getProfileImageUrl();
         }
     }
 }
