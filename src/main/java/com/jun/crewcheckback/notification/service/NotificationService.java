@@ -3,6 +3,7 @@ package com.jun.crewcheckback.notification.service;
 import com.jun.crewcheckback.notification.domain.Notification;
 import com.jun.crewcheckback.notification.domain.NotificationSetting;
 import com.jun.crewcheckback.notification.domain.NotificationType;
+import com.jun.crewcheckback.notification.dto.NotificationResponse;
 import com.jun.crewcheckback.notification.dto.NotificationSettingResponse;
 import com.jun.crewcheckback.notification.dto.NotificationSettingUpdateRequest;
 import com.jun.crewcheckback.notification.repository.NotificationSettingRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -133,13 +135,13 @@ public class NotificationService {
                 notificationRepository.save(notification);
         }
 
-        public List<com.jun.crewcheckback.notification.dto.NotificationResponse> getNotifications(String email) {
+        public List<NotificationResponse> getNotifications(String email) {
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
                 return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
-                                .map(com.jun.crewcheckback.notification.dto.NotificationResponse::from)
-                                .collect(java.util.stream.Collectors.toList());
+                                .map(NotificationResponse::from)
+                                .collect(Collectors.toList());
         }
 
         @Transactional

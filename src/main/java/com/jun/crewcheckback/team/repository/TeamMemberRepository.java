@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface TeamMemberRepository extends JpaRepository<TeamMember, UUID> {
     List<TeamMember> findAllByUserAndStatus(User user, String status);
 
+    List<TeamMember> findAllByUserAndStatusAndTeamDeletedYn(User user, String status, String teamDeletedYn);
+
     List<TeamMember> findAllByUser(User user);
 
     List<TeamMember> findAllByTeamId(UUID teamId);

@@ -53,7 +53,6 @@ public class CheckInService {
 
         CheckIn savedCheckIn = checkInRepository.save(checkIn);
 
-
         // Send notification to team members
         List<User> recipients = teamMemberRepository.findAllByTeamId(team.getId()).stream()
                 .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
@@ -84,15 +83,11 @@ public class CheckInService {
             throw new IllegalArgumentException("Only author can update the check-in");
         }
 
-        System.out.println("request===="+request.getStatus());
-
         checkIn.update(request.getContent(), request.getImageUrl(), request.getRoutineTitle(), request.getStatus(),
                 request.getDifficultyLevel());
 
-
-
-        //완료시에만 알림
-        if(request.getStatus().equals("approved")) {
+        // 완료시에만 알림
+        if (request.getStatus().equals("approved")) {
             // Send notification to team members
             List<User> recipients = teamMemberRepository.findAllByTeamId(checkIn.getTeam().getId()).stream()
                     .map(TeamMember::getUser)
@@ -105,7 +100,6 @@ public class CheckInService {
                 notificationService.sendStreakNotification(checkIn.getUser(), streakDays);
             }
         }
-
 
         return new CheckInResponse(checkIn);
     }

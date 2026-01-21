@@ -1,6 +1,7 @@
 package com.jun.crewcheckback.notification.controller;
 
 import com.jun.crewcheckback.global.common.ApiResponse;
+import com.jun.crewcheckback.notification.dto.NotificationResponse;
 import com.jun.crewcheckback.notification.dto.NotificationSettingResponse;
 import com.jun.crewcheckback.notification.dto.NotificationSettingUpdateRequest;
 import com.jun.crewcheckback.notification.service.NotificationService;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -33,9 +36,9 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<java.util.List<com.jun.crewcheckback.notification.dto.NotificationResponse>>> getNotifications(
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotifications(
             @AuthenticationPrincipal UserDetails userDetails) {
-        java.util.List<com.jun.crewcheckback.notification.dto.NotificationResponse> response = notificationService
+        List<NotificationResponse> response = notificationService
                 .getNotifications(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(response));
     }

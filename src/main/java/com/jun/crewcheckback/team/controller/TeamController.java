@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -95,9 +96,9 @@ public class TeamController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponse<java.util.List<TeamResponse>>> getMyTeams(
+    public ResponseEntity<ApiResponse<List<TeamResponse>>> getMyTeams(
             @AuthenticationPrincipal UserDetails userDetails) {
-        java.util.List<TeamResponse> response = teamService.getMyJoinedTeams(userDetails.getUsername());
+        List<TeamResponse> response = teamService.getMyJoinedTeams(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

@@ -1,6 +1,7 @@
 package com.jun.crewcheckback.team.service;
 
 import com.jun.crewcheckback.team.domain.Team;
+import com.jun.crewcheckback.team.domain.TeamMember;
 import com.jun.crewcheckback.team.dto.TeamCreateRequest;
 import com.jun.crewcheckback.team.dto.TeamMemberResponse;
 import com.jun.crewcheckback.team.dto.TeamResponse;
@@ -172,7 +173,8 @@ public class TeamService {
                         java.time.LocalDateTime end = targetDate.atTime(java.time.LocalTime.MAX);
 
                         boolean hasApprovedCheckIn = checkInRepository
-                                        .existsByTeamAndUserAndTimestampBetweenAndStatus(team, user, start, end, "approved");
+                                        .existsByTeamAndUserAndTimestampBetweenAndStatus(team, user, start, end,
+                                                        "approved");
 
                         if (hasApprovedCheckIn) {
                                 streak++;
@@ -283,9 +285,8 @@ public class TeamService {
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-                List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository
-                                .findAllByUserAndStatus(user,
-                                                "active");
+                List<TeamMember> members = teamMemberRepository
+                                .findAllByUserAndStatusAndTeamDeletedYn(user, "active", "N");
 
                 return members.stream()
                                 .map(member -> createTeamResponseWithStats(member.getTeam()))
@@ -296,8 +297,8 @@ public class TeamService {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-                List<com.jun.crewcheckback.team.domain.TeamMember> members = teamMemberRepository
-                                .findAllByUserAndStatus(user, "active");
+                List<TeamMember> members = teamMemberRepository
+                                .findAllByUserAndStatusAndTeamDeletedYn(user, "active", "N");
 
                 return members.stream()
                                 .map(member -> createTeamResponseWithStats(member.getTeam()))
