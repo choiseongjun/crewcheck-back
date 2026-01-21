@@ -90,19 +90,33 @@ public class Team extends BaseEntity {
             String grade,
             Integer memberLimit, Boolean isPublic, Boolean requireApproval, String frequency,
             Integer durationDays, String commonMission, LocalDate startDate) {
-        this.name = name;
-        this.description = description;
-        this.goal = goal;
-        this.introduce = introduce;
-        this.imageUrl = imageUrl;
-        this.category = category;
-        this.grade = grade;
-        this.memberLimit = memberLimit;
-        this.isPublic = isPublic;
-        this.requireApproval = requireApproval;
-        this.frequency = frequency;
-        this.durationDays = durationDays;
-        this.commonMission = commonMission;
-        this.startDate = startDate;
+        if (name != null)
+            this.name = name;
+        if (description != null)
+            this.description = description;
+        if (goal != null)
+            this.goal = goal;
+        if (introduce != null)
+            this.introduce = introduce;
+        if (imageUrl != null)
+            this.imageUrl = imageUrl;
+        if (category != null)
+            this.category = category;
+        if (grade != null)
+            this.grade = grade;
+        if (memberLimit != null)
+            this.memberLimit = memberLimit;
+        if (isPublic != null)
+            this.isPublic = isPublic;
+        if (requireApproval != null)
+            this.requireApproval = requireApproval;
+        if (frequency != null)
+            this.frequency = frequency;
+        if (durationDays != null)
+            this.durationDays = durationDays;
+        if (commonMission != null)
+            this.commonMission = commonMission;
+        if (startDate != null)
+            this.startDate = startDate;
     }
 }

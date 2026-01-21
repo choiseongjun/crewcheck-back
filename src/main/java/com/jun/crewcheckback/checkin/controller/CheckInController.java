@@ -75,6 +75,14 @@ public class CheckInController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/todo/teams/{teamId}")
+    public ResponseEntity<ApiResponse<TodoAllResponse>> getTodoByTeam(
+            @PathVariable UUID teamId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TodoAllResponse response = checkInService.getTodoByTeam(userDetails.getUsername(), teamId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/todo/weekly")
     public ResponseEntity<ApiResponse<TodoAllResponse>> getWeeklyTodo(
             @RequestParam(required = false) LocalDate date,

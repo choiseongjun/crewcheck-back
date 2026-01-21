@@ -231,6 +231,19 @@ public class CheckInService {
                 rejectedCheckIns);
     }
 
+    public TodoAllResponse getTodoByTeam(String email, UUID teamId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+
+        List<CheckIn> checkIns = checkInRepository.findAllByTeamAndUser(team, user);
+
+        // Map to response
+        return mapCheckInsToTodoResponse(checkIns);
+    }
+
     public DailyCheckInSummaryResponse getDailySummary(String email, LocalDate date) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -447,19 +460,22 @@ public class CheckInService {
                 .map(checkIn -> checkIn.getTimestamp().atZone(seoulZone).toLocalDate())
                 .collect(Collectors.toSet());
 
-        // 가장 최근 approved 날짜 찾기
-        LocalDate latestDate = approvedDates.stream()
-                .max(LocalDate::compareTo)
-                .orElse(null);
+        LocalDate today = LocalDate.now(seoulZone);
+        LocalDate checkDate = today;
 
-        if (latestDate == null) {
-            return new StreakResponse(0);
+        // If today is not approved, check if yesterday was approved (streak implies
+        // continuity)
+        // If neither today nor yesterday is approved, streak is broken -> 0
+        if (!approvedDates.contains(today)) {
+            if (approvedDates.contains(today.minusDays(1))) {
+                checkDate = today.minusDays(1);
+            } else {
+                return new StreakResponse(0);
+            }
         }
 
         int streak = 0;
-        LocalDate checkDate = latestDate;
-
-        // 최근 날짜부터 역순으로 연속 일수 계산
+        // Count backwards
         while (approvedDates.contains(checkDate)) {
             streak++;
             checkDate = checkDate.minusDays(1);
