@@ -41,6 +41,21 @@ public class NotificationService {
         }
 
         @Transactional
+        public void sendCheckInNotificationInit(com.jun.crewcheckback.team.domain.Team team, User user,
+                                            com.jun.crewcheckback.checkin.domain.CheckIn checkIn, List<User> recipients) {
+                String title = "팀 활동 알림";
+                String body = String.format("%s 님이 '%s' 루틴을 올렸습니다!", user.getNickname(), checkIn.getRoutineTitle());
+
+                for (User recipient : recipients) {
+                        NotificationSetting setting = notificationSettingRepository.findByUser(recipient)
+                                .orElse(NotificationSetting.createDefault(recipient));
+
+                        if (setting.isTeamActivityNotification()) {
+                                sendNotification(recipient, title, body, NotificationType.TEAM, checkIn.getId());
+                        }
+                }
+        }
+        @Transactional
         public void sendCheckInNotification(com.jun.crewcheckback.team.domain.Team team, User user,
                         com.jun.crewcheckback.checkin.domain.CheckIn checkIn, List<User> recipients) {
                 String title = "팀 활동 알림";
@@ -54,6 +69,29 @@ public class NotificationService {
                                 sendNotification(recipient, title, body, NotificationType.TEAM, checkIn.getId());
                         }
                 }
+        }
+
+        @Transactional
+        public void sendKickNotification(com.jun.crewcheckback.team.domain.Team team, User user, String reason) {
+                String title = "팀 강퇴 알림";
+                String body = String.format("%s 팀에서 강퇴되었습니다. 사유: %s", team.getName(), reason);
+
+                // Notification setting check? Maybe force send or check generic notification
+                // setting?
+                // Assuming always send for kick or check newMemberNotification?? No, maybe just
+                // send.
+                // Or check teamActivityNotification? It's severe, so maybe always send.
+                // But let's check basic existence of setting.
+                notificationSettingRepository.findByUser(user)
+                                .orElse(NotificationSetting.createDefault(user));
+
+                // We'll send it regardless of specific flag because it's an important account
+                // action,
+                // or reusing 'teamActivityNotification' if strictly needed.
+                // Let's assume always send for now as per requirement "notification with
+                // reason".
+
+                sendNotification(user, title, body, NotificationType.TEAM, team.getId());
         }
 
         private void sendNotification(User recipient, String title, String body, NotificationType type,
@@ -74,10 +112,19 @@ public class NotificationService {
                                 notification.markAsSent();
                         } catch (Exception e) {
                                 // FCM 전송 실패 시 로그만 남기고 알림은 저장
+                                // Consider logging the exception here, e.g., log.error("FCM send failed", e);
                         }
                 }
-
                 notificationRepository.save(notification);
+        }
+
+        public List<com.jun.crewcheckback.notification.dto.NotificationResponse> getNotifications(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
+                                .map(com.jun.crewcheckback.notification.dto.NotificationResponse::from)
+                                .collect(java.util.stream.Collectors.toList());
         }
 
         @Transactional

@@ -31,4 +31,12 @@ public class NotificationController {
         NotificationSettingResponse response = notificationService.updateSettings(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<com.jun.crewcheckback.notification.dto.NotificationResponse>>> getNotifications(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        java.util.List<com.jun.crewcheckback.notification.dto.NotificationResponse> response = notificationService
+                .getNotifications(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

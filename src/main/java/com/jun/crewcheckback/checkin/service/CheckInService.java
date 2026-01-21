@@ -4,6 +4,7 @@ import com.jun.crewcheckback.checkin.domain.CheckIn;
 import com.jun.crewcheckback.checkin.dto.*;
 import com.jun.crewcheckback.checkin.repository.CheckInRepository;
 import com.jun.crewcheckback.team.domain.Team;
+import com.jun.crewcheckback.team.domain.TeamMember;
 import com.jun.crewcheckback.team.dto.TeamResponse;
 import com.jun.crewcheckback.team.repository.TeamRepository;
 import com.jun.crewcheckback.user.domain.User;
@@ -43,6 +44,7 @@ public class CheckInService {
         CheckIn checkIn = CheckIn.builder()
                 .user(user)
                 .team(team)
+                .status("pending")
                 .content(request.getContent())
                 .difficultyLevel(request.getDifficultyLevel())
                 .imageUrl(request.getImageUrl())
@@ -51,12 +53,13 @@ public class CheckInService {
 
         CheckIn savedCheckIn = checkInRepository.save(checkIn);
 
+
         // Send notification to team members
         List<User> recipients = teamMemberRepository.findAllByTeamId(team.getId()).stream()
                 .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
                 .collect(Collectors.toList());
 
-        notificationService.sendCheckInNotification(team, user, savedCheckIn, recipients);
+        notificationService.sendCheckInNotificationInit(team, user, savedCheckIn, recipients);
 
         return new CheckInResponse(savedCheckIn);
     }
@@ -81,16 +84,19 @@ public class CheckInService {
             throw new IllegalArgumentException("Only author can update the check-in");
         }
 
+        System.out.println("request===="+request.getStatus());
+
         checkIn.update(request.getContent(), request.getImageUrl(), request.getRoutineTitle(), request.getStatus(),
                 request.getDifficultyLevel());
 
-        // Send notification to team members
-        List<User> recipients = teamMemberRepository.findAllByTeamId(checkIn.getTeam().getId()).stream()
-                .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
-                .collect(Collectors.toList());
+
 
         //완료시에만 알림
         if(request.getStatus().equals("approved")) {
+            // Send notification to team members
+            List<User> recipients = teamMemberRepository.findAllByTeamId(checkIn.getTeam().getId()).stream()
+                    .map(TeamMember::getUser)
+                    .collect(Collectors.toList());
             notificationService.sendCheckInNotification(checkIn.getTeam(), checkIn.getUser(), checkIn, recipients);
         }
 

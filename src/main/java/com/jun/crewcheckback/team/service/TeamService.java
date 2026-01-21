@@ -155,9 +155,33 @@ public class TeamService {
                                         int approved = (int) checkIns.stream()
                                                         .filter(c -> "approved".equals(c.getStatus())).count();
                                         int rate = total > 0 ? (int) ((double) approved / total * 100) : 0;
-                                        return new TeamMemberResponse(member, rate);
+                                        int streakDays = calculateStreakDays(member.getTeam(), member.getUser());
+                                        return new TeamMemberResponse(member, rate, streakDays);
                                 })
                                 .collect(Collectors.toList());
+        }
+
+        private int calculateStreakDays(Team team, User user) {
+                java.time.ZoneId seoulZone = java.time.ZoneId.of("Asia/Seoul");
+                java.time.LocalDate today = java.time.LocalDate.now(seoulZone);
+                int streak = 0;
+
+                for (int i = 0; i < 365; i++) {
+                        java.time.LocalDate targetDate = today.minusDays(i);
+                        java.time.LocalDateTime start = targetDate.atStartOfDay();
+                        java.time.LocalDateTime end = targetDate.atTime(java.time.LocalTime.MAX);
+
+                        boolean hasApprovedCheckIn = checkInRepository
+                                        .existsByTeamAndUserAndTimestampBetweenAndStatus(team, user, start, end, "approved");
+
+                        if (hasApprovedCheckIn) {
+                                streak++;
+                        } else {
+                                break;
+                        }
+                }
+
+                return streak;
         }
 
         @Transactional
@@ -211,6 +235,31 @@ public class TeamService {
                 }
 
                 teamMemberRepository.delete(teamMember);
+        }
+
+        @Transactional
+        public void kickMember(UUID teamId, UUID userId, String reason, String leaderEmail) {
+                Team team = teamRepository.findByIdAndDeletedYn(teamId, "N")
+                                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+
+                if (!team.getOwner().getEmail().equals(leaderEmail)) {
+                        throw new IllegalArgumentException("Only leader can kick members");
+                }
+
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                if (team.getOwner().getId().equals(user.getId())) {
+                        throw new IllegalArgumentException("Cannot kick yourself");
+                }
+
+                com.jun.crewcheckback.team.domain.TeamMember teamMember = teamMemberRepository
+                                .findByTeamAndUser(team, user)
+                                .orElseThrow(() -> new IllegalArgumentException("Not a member of the team"));
+
+                teamMemberRepository.delete(teamMember);
+
+                notificationService.sendKickNotification(team, user, reason);
         }
 
         public List<TeamResponse> getRanking() {

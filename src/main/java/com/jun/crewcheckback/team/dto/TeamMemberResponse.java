@@ -16,8 +16,9 @@ public class TeamMemberResponse {
     private String status;
     private LocalDateTime joinedAt;
     private int achievementRate;
+    private int streakDays;
 
-    public TeamMemberResponse(TeamMember teamMember, int achievementRate) {
+    public TeamMemberResponse(TeamMember teamMember, int achievementRate, int streakDays) {
         this.userId = teamMember.getUser().getId();
         this.nickname = teamMember.getUser().getNickname();
         this.email = teamMember.getUser().getEmail();
@@ -26,9 +27,14 @@ public class TeamMemberResponse {
         this.status = teamMember.getStatus();
         this.joinedAt = teamMember.getJoinedAt();
         this.achievementRate = achievementRate;
+        this.streakDays = streakDays;
+    }
+
+    public TeamMemberResponse(TeamMember teamMember, int achievementRate) {
+        this(teamMember, achievementRate, 0);
     }
 
     public TeamMemberResponse(TeamMember teamMember) {
-        this(teamMember, 0);
+        this(teamMember, 0, 0);
     }
 }

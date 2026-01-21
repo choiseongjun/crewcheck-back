@@ -78,6 +78,15 @@ public class TeamController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/{teamId}/members/{userId}/kick")
+    public ResponseEntity<ApiResponse<Void>> kickMember(@PathVariable UUID teamId,
+            @PathVariable UUID userId,
+            @RequestBody com.jun.crewcheckback.team.dto.TeamKickRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        teamService.kickMember(teamId, userId, request.getReason(), userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<java.util.List<TeamResponse>>> getRanking() {
         java.util.List<TeamResponse> response = teamService.getRanking();
