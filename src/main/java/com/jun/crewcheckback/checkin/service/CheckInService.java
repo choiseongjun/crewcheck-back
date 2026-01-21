@@ -29,6 +29,8 @@ public class CheckInService {
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final com.jun.crewcheckback.team.repository.TeamMemberRepository teamMemberRepository;
+    private final com.jun.crewcheckback.notification.service.NotificationService notificationService;
 
     @Transactional
     public CheckInResponse createCheckIn(CheckInCreateRequest request, String email) {
@@ -48,6 +50,14 @@ public class CheckInService {
                 .build();
 
         CheckIn savedCheckIn = checkInRepository.save(checkIn);
+
+        // Send notification to team members
+        List<User> recipients = teamMemberRepository.findAllByTeamId(team.getId()).stream()
+                .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
+                .collect(Collectors.toList());
+
+        notificationService.sendCheckInNotification(team, user, savedCheckIn, recipients);
+
         return new CheckInResponse(savedCheckIn);
     }
 
@@ -73,6 +83,18 @@ public class CheckInService {
 
         checkIn.update(request.getContent(), request.getImageUrl(), request.getRoutineTitle(), request.getStatus(),
                 request.getDifficultyLevel());
+
+        // Send notification to team members
+        List<User> recipients = teamMemberRepository.findAllByTeamId(checkIn.getTeam().getId()).stream()
+                .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
+                .collect(Collectors.toList());
+
+        //완료시에만 알림
+        if(request.getStatus().equals("approved")) {
+            notificationService.sendCheckInNotification(checkIn.getTeam(), checkIn.getUser(), checkIn, recipients);
+        }
+
+
         return new CheckInResponse(checkIn);
     }
 

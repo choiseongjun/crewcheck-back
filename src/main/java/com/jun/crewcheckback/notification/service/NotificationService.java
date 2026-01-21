@@ -35,30 +35,49 @@ public class NotificationService {
                                         .orElse(NotificationSetting.createDefault(recipient));
 
                         if (setting.isNewMemberNotification()) {
-                                Notification notification = Notification
-                                                .builder()
-                                                .user(recipient)
-                                                .title(title)
-                                                .body(body)
-                                                .notificationType(
-                                                                NotificationType.TEAM)
-                                                .referenceId(team.getId())
-                                                .build();
-
-                                // FCM Push
-                                if (recipient.getDeviceToken() != null && !recipient.getDeviceToken().isEmpty()) {
-                                        try {
-                                                fcmService.sendMessage(recipient.getDeviceToken(), title, body);
-                                                notification.markAsSent();
-                                        } catch (Exception e) {
-                                                // FCM 전송 실패 시 로그만 남기고 알림은 저장
-                                                // log.error("FCM send failed", e);
-                                        }
-                                }
-
-                                notificationRepository.save(notification);
+                                sendNotification(recipient, title, body, NotificationType.TEAM, team.getId());
                         }
                 }
+        }
+
+        @Transactional
+        public void sendCheckInNotification(com.jun.crewcheckback.team.domain.Team team, User user,
+                        com.jun.crewcheckback.checkin.domain.CheckIn checkIn, List<User> recipients) {
+                String title = "팀 활동 알림";
+                String body = String.format("%s 님이 '%s' 루틴을 완료했습니다!", user.getNickname(), checkIn.getRoutineTitle());
+
+                for (User recipient : recipients) {
+                        NotificationSetting setting = notificationSettingRepository.findByUser(recipient)
+                                        .orElse(NotificationSetting.createDefault(recipient));
+
+                        if (setting.isTeamActivityNotification()) {
+                                sendNotification(recipient, title, body, NotificationType.TEAM, checkIn.getId());
+                        }
+                }
+        }
+
+        private void sendNotification(User recipient, String title, String body, NotificationType type,
+                        java.util.UUID referenceId) {
+                Notification notification = Notification
+                                .builder()
+                                .user(recipient)
+                                .title(title)
+                                .body(body)
+                                .notificationType(type)
+                                .referenceId(referenceId)
+                                .build();
+
+                // FCM Push
+                if (recipient.getDeviceToken() != null && !recipient.getDeviceToken().isEmpty()) {
+                        try {
+                                fcmService.sendMessage(recipient.getDeviceToken(), title, body);
+                                notification.markAsSent();
+                        } catch (Exception e) {
+                                // FCM 전송 실패 시 로그만 남기고 알림은 저장
+                        }
+                }
+
+                notificationRepository.save(notification);
         }
 
         @Transactional

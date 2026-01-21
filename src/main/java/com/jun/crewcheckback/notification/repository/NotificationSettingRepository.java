@@ -9,4 +9,12 @@ import java.util.UUID;
 
 public interface NotificationSettingRepository extends JpaRepository<NotificationSetting, UUID> {
     Optional<NotificationSetting> findByUser(User user);
+
+    java.util.List<NotificationSetting> findAllByReminder09True();
+
+    java.util.List<NotificationSetting> findAllByReminder12True();
+
+    java.util.List<NotificationSetting> findAllByReminder18True();
+
+    java.util.List<NotificationSetting> findAllByReminder21True();
 }
