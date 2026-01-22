@@ -4,12 +4,17 @@ import com.jun.crewcheckback.global.common.ApiResponse;
 import com.jun.crewcheckback.notification.dto.FcmSendRequest;
 import com.jun.crewcheckback.notification.service.FcmService;
 
+import com.jun.crewcheckback.team.domain.Team;
+import com.jun.crewcheckback.team.domain.TeamMember;
+import com.jun.crewcheckback.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 //@Tag(name = "FCM Test", description = "FCM 푸시 알림 테스트 API")
 @RestController
@@ -33,8 +38,8 @@ public class FcmController {
             throw new IllegalArgumentException("사용자의 디바이스 토큰이 존재하지 않습니다.");
         }
 
-        String response = fcmService.sendMessage(user.getDeviceToken(), request.getTitle(), request.getBody());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        fcmService.sendMessage(user.getDeviceToken(), request.getTitle(), request.getBody());
+        return ResponseEntity.ok(ApiResponse.success("ok"));
     }
 
     // @Operation(summary = "팀 가입 알림 테스트", description = "팀 가입 시나리오를 가정하여 알림을
@@ -42,15 +47,15 @@ public class FcmController {
     @PostMapping("/test-team-join")
     public ResponseEntity<ApiResponse<String>> testTeamJoinNotification(
             @RequestBody com.jun.crewcheckback.notification.dto.TestTeamJoinRequest request) {
-        com.jun.crewcheckback.team.domain.Team team = teamRepository.findByIdAndDeletedYn(request.getTeamId(), "N")
+        Team team = teamRepository.findByIdAndDeletedYn(request.getTeamId(), "N")
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         com.jun.crewcheckback.user.domain.User joiner = userRepository.findById(request.getJoinerId())
                 .orElseThrow(() -> new IllegalArgumentException("가입자를 찾을 수 없습니다."));
 
-        java.util.List<com.jun.crewcheckback.user.domain.User> recipients = teamMemberRepository
+        List<User> recipients = teamMemberRepository
                 .findAllByTeamId(team.getId()).stream()
-                .map(com.jun.crewcheckback.team.domain.TeamMember::getUser)
+                .map(TeamMember::getUser)
                 .filter(member -> !member.getId().equals(joiner.getId()))
                 .collect(java.util.stream.Collectors.toList());
 

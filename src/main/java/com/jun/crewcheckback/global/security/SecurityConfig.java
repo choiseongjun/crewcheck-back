@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 "/api/v1/check-ins/**",
                                 "/api/files/**",
                                 "/api/v1/teams/**",
+                                "/health",
                                 "/api/v1/fcm/**")
                         .permitAll()
                         .anyRequest().authenticated())

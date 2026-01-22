@@ -132,6 +132,12 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> withdraw(@AuthenticationPrincipal UserDetails userDetails) {
+        userService.deleteUser(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {

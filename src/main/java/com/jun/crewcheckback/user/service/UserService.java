@@ -143,6 +143,13 @@ public class UserService {
     @Transactional
     public TokenResponse socialLogin(SocialLoginRequest request, String ipAddress, String userAgent) {
         User user = userRepository.findByEmail(request.getEmail())
+                .map(existingUser -> {
+                    if ("Y".equals(existingUser.getDeletedYn())) {
+                        throw new IllegalArgumentException(
+                                "현재 아이디는 탈퇴하였습니다. 재가입하려면 crewcheck.inapp@gmail.com로 문의해주세요.");
+                    }
+                    return existingUser;
+                })
                 .orElseGet(() -> {
                     // Create new user if not exists
                     return userRepository.save(User.builder()
@@ -279,5 +286,12 @@ public class UserService {
         } else {
             return "Desktop";
         }
+    }
+
+    @Transactional
+    public void deleteUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.withdraw();
     }
 }

@@ -86,4 +86,11 @@ public class User extends BaseEntity {
     public void updateDeviceToken(String deviceToken) {
         this.deviceToken = deviceToken;
     }
+
+    @Column(name = "deleted_yn", length = 1)
+    private String deletedYn = "N";
+
+    public void withdraw() {
+        this.deletedYn = "Y";
+    }
 }
