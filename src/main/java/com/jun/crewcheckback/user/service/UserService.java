@@ -137,7 +137,14 @@ public class UserService {
 
         refreshTokenRepository.save(refreshToken);
 
-        return new TokenResponse(accessToken, refreshTokenValue, "Bearer");
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenValue)
+                .tokenType("Bearer")
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
     }
 
     @Transactional
@@ -185,7 +192,14 @@ public class UserService {
 
         refreshTokenRepository.save(refreshToken);
 
-        return new TokenResponse(accessToken, refreshTokenValue, "Bearer");
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenValue)
+                .tokenType("Bearer")
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
     }
 
     @Transactional
@@ -233,8 +247,7 @@ public class UserService {
         RefreshToken newRefreshToken = RefreshToken.builder()
                 .token(newRefreshTokenValue)
                 .user(user)
-                .ipAddress(storedToken.getIpAddress()) // Reuse IP/UserAgent for simplicity or get from request if
-                                                       // possible
+                .ipAddress(storedToken.getIpAddress())
                 .userAgent(storedToken.getUserAgent())
                 .deviceInfo(storedToken.getDeviceInfo())
                 .expiresAt(expiresAt)
@@ -242,7 +255,14 @@ public class UserService {
 
         refreshTokenRepository.save(newRefreshToken);
 
-        return new TokenResponse(newAccessToken, newRefreshTokenValue, "Bearer");
+        return TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshTokenValue)
+                .tokenType("Bearer")
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
     }
 
     public UserResponse getUser(String email) {
