@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/api/files/**",
                                 "/api/v1/teams/**",
                                 "/health",
+                                "/api/v1/feeds/**",
                                 "/api/v1/feed-subjects/**",
                                 "/api/v1/fcm/**")
                         .permitAll()

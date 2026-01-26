@@ -13,6 +13,7 @@ public class FeedSubjectResponse {
     private String content;
     private String enName;
     private String coverImage;
+    private String mood;
     private Integer participantCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
